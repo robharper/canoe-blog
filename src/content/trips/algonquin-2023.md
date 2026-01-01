@@ -5,6 +5,7 @@ location: "Algonquin Provincial Park, Ontario"
 excerpt: "A 4-day journey through the rugged east side of the park, featuring the spectacular Barron Canyon and clear, deep lakes."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
 mapImage: "../../assets/images/trips/algonquin-2023/map.png"
+geojson: "/src/assets/geo/algonquin-2023.json"
 ---
 
 The morning mist was still clinging to the water when we pushed off from the Achray campground. Our plan was ambitious but manageable: a four-day loop taking us down through the spectacular Barron Canyon and back up via a series of smaller, portage-heavy lakes.

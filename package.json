@@ -11,7 +11,9 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",
+    "@types/maplibre-gl": "^1.13.2",
     "astro": "^5.16.6",
+    "maplibre-gl": "^5.15.0",
     "tailwindcss": "^4.1.18"
   }
 }

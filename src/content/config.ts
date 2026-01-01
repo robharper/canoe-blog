@@ -9,6 +9,7 @@ const tripsCollection = defineCollection({
 		excerpt: z.string(),
 		coverImage: image(),
 		mapImage: image().optional(),
+		geojson: z.string().optional(),
 	}),
 });
 

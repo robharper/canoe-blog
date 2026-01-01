@@ -1,0 +1,99 @@
+---
+import "maplibre-gl/dist/maplibre-gl.css";
+
+interface Props {
+    geojson: string;
+}
+
+const { geojson } = Astro.props;
+---
+
+<div
+    id="map"
+    class="w-full h-[400px] rounded-lg shadow-md border border-bark-200"
+    data-geojson={geojson}
+>
+</div>
+
+<script>
+    import maplibregl from "maplibre-gl";
+
+    const mapContainer = document.getElementById("map");
+    const geojsonUrl = mapContainer?.dataset.geojson;
+
+    if (mapContainer && geojsonUrl) {
+        const map = new maplibregl.Map({
+            container: "map",
+            style: "https://api.maptiler.com/maps/9ee3fbec-1620-437f-9b35-e74ba4568490/style.json?key=WJJ16dpcfvolmmWp8Tcv",
+            center: [-77.77, 45.86], // Initial center, will update with bounds
+            zoom: 10,
+        });
+
+        map.on("load", async () => {
+            try {
+                const response = await fetch(geojsonUrl);
+                const data = await response.json();
+
+                map.addSource("canoe-data", {
+                    type: "geojson",
+                    data: data,
+                });
+
+                map.addLayer({
+                    id: "canoe",
+                    type: "line",
+                    source: "canoe-data",
+                    paint: {
+                        "line-width": 5,
+                        "line-color": [
+                            "match",
+                            ["get", "canoe"],
+                            "yes",
+                            "#3D6A8E",
+                            "portage",
+                            "#A64D4D",
+                            "#8ab4c4",
+                        ],
+                    },
+                    filter: ["all", ["==", "$type", "LineString"]],
+                });
+
+                map.addLayer({
+                    id: "campsites",
+                    type: "symbol",
+                    source: "canoe-data",
+                    layout: {
+                        "icon-image": "campsite",
+                    },
+                    paint: {
+                        "icon-color": "black",
+                    },
+                    filter: ["==", "$type", "Point"],
+                });
+
+                // Calculate bounds
+                const bounds = new maplibregl.LngLatBounds();
+
+                data.features.forEach((feature: any) => {
+                    if (feature.geometry.type === "LineString") {
+                        feature.geometry.coordinates.forEach(
+                            (coord: [number, number]) => {
+                                bounds.extend(coord);
+                            },
+                        );
+                    } else if (feature.geometry.type === "Point") {
+                        bounds.extend(
+                            feature.geometry.coordinates as [number, number],
+                        );
+                    }
+                });
+
+                map.fitBounds(bounds, {
+                    padding: 50,
+                });
+            } catch (error) {
+                console.error("Error loading GeoJSON:", error);
+            }
+        });
+    }
+</script>
