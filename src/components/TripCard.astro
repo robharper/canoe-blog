@@ -11,7 +11,7 @@ const { trip } = Astro.props;
 
 <a
     href={`/trips/${trip.slug}`}
-    class="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-bark-200"
+    class="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-zinc-200"
 >
     <div class="relative h-48 overflow-hidden">
         <Image
@@ -32,7 +32,7 @@ const { trip } = Astro.props;
             >
                 {trip.data.location}
             </span>
-            <span class="text-xs text-bark-400">
+            <span class="text-xs text-zinc-400">
                 {
                     trip.data.date.toLocaleDateString("en-US", {
                         year: "numeric",
@@ -43,11 +43,11 @@ const { trip } = Astro.props;
             </span>
         </div>
         <h3
-            class="text-xl font-serif font-bold text-bark-800 group-hover:text-river-700 transition-colors mb-2"
+            class="text-xl font-serif font-bold text-zinc-800 group-hover:text-river-700 transition-colors mb-2"
         >
             {trip.data.title}
         </h3>
-        <p class="text-bark-600 text-sm line-clamp-2">
+        <p class="text-zinc-600 text-sm line-clamp-2">
             {trip.data.excerpt}
         </p>
     </div>

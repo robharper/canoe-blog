@@ -6,6 +6,7 @@ excerpt: "A 4-day journey through the rugged east side of the park, featuring th
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
 mapImage: "../../assets/images/trips/algonquin-2023/map.png"
 geojson: "/src/assets/geo/algonquin-2023.json"
+mapCenter: [-78.80, 45.63]
 ---
 
 The morning mist was still clinging to the water when we pushed off from the Achray campground. Our plan was ambitious but manageable: a four-day loop taking us down through the spectacular Barron Canyon and back up via a series of smaller, portage-heavy lakes.
@@ -38,6 +39,8 @@ My favorite meals in order of priority:
 ## Day 2: The Portage
 
 "Portage" is a French word meaning "to carry," but I'm pretty sure it's actually derived from an ancient term for "suffering." The 1400m climb out of the river valley was a test of legs and will. But the reward was High Falls Lake, a sparkling gem that felt untouched.
+
+![Red canoe on the water](../../assets/images/trips/algonquin-2023/cover.png "left")
 
 We spent the afternoon swimming and drying out on the warm rocks. This is the rhythm of the trip: work hard, rest hard.
 

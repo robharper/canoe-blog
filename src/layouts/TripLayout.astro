@@ -21,7 +21,7 @@ const { trip } = Astro.props;
                 >
                     {trip.data.location}
                 </span>
-                <span class="text-bark-500 text-sm">
+                <span class="text-zinc-500 text-sm">
                     {
                         trip.data.date.toLocaleDateString("en-US", {
                             weekday: "long",
@@ -33,7 +33,7 @@ const { trip } = Astro.props;
                 </span>
             </div>
             <h1
-                class="text-4xl md:text-5xl font-serif font-bold text-bark-900 mb-6 leading-tight"
+                class="text-4xl md:text-5xl font-serif font-bold text-zinc-900 mb-6 leading-tight"
             >
                 {trip.data.title}
             </h1>
@@ -41,7 +41,7 @@ const { trip } = Astro.props;
 
         <!-- Cover Image -->
         <div
-            class="mb-12 rounded-xl overflow-hidden shadow-lg border border-bark-200"
+            class="mb-12 rounded-xl overflow-hidden shadow-lg border border-zinc-200"
         >
             <Image
                 src={trip.data.coverImage}
@@ -56,18 +56,25 @@ const { trip } = Astro.props;
         <!-- Map Section (if available) -->
         {
             (trip.data.geojson || trip.data.mapImage) && (
-                <div class="mb-12 p-6 bg-white rounded-lg shadow-inner border border-bark-200">
-                    <h3 class="text-lg font-bold text-bark-700 mb-4 border-b border-bark-100 pb-2">
+                <div class="mb-12 bg-white">
+                    <h3 class="text-lg font-bold text-zinc-700 mb-4 border-b border-zinc-100 pb-2">
                         Route Map
                     </h3>
 
                     {trip.data.geojson ? (
-                        <TripMap geojson={trip.data.geojson} />
+                        <TripMap
+                            geojson={trip.data.geojson}
+                            center={
+                                trip.data.mapCenter as
+                                    | [number, number]
+                                    | undefined
+                            }
+                        />
                     ) : (
                         <Image
                             src={trip.data.mapImage!}
                             alt={`Map of ${trip.data.title}`}
-                            class="w-full h-auto rounded border border-bark-100 grayscale hover:grayscale-0 transition-all duration-500"
+                            class="w-full h-auto rounded border border-zinc-100 grayscale hover:grayscale-0 transition-all duration-500"
                         />
                     )}
                 </div>
@@ -76,14 +83,14 @@ const { trip } = Astro.props;
 
         <!-- Content -->
         <div
-            class="prose prose-lg prose-stone max-w-none text-bark-800 prose-headings:font-serif prose-headings:text-bark-900 prose-a:text-river-600 hover:prose-a:text-river-800 prose-img:rounded-lg prose-img:shadow-md"
+            class="prose prose-lg prose-zinc max-w-none text-zinc-800 prose-headings:font-serif prose-headings:text-zinc-900 prose-a:text-river-600 hover:prose-a:text-river-800 prose-img:rounded-lg prose-img:shadow-md"
         >
             <slot />
         </div>
     </article>
 
     <!-- Navigation/Back -->
-    <div class="mt-16 pt-8 border-t border-bark-200 text-center">
+    <div class="mt-16 pt-8 border-t border-zinc-200 text-center">
         <a
             href="/"
             class="inline-flex items-center gap-2 text-river-700 hover:text-river-900 font-medium transition-colors"

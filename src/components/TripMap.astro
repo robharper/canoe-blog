@@ -3,15 +3,17 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 interface Props {
     geojson: string;
+    center?: [number, number];
 }
 
-const { geojson } = Astro.props;
+const { geojson, center } = Astro.props;
 ---
 
 <div
     id="map"
     class="w-full h-[400px] rounded-lg shadow-md border border-bark-200"
     data-geojson={geojson}
+    data-center={JSON.stringify(center)}
 >
 </div>
 
@@ -20,13 +22,19 @@ const { geojson } = Astro.props;
 
     const mapContainer = document.getElementById("map");
     const geojsonUrl = mapContainer?.dataset.geojson;
+    const centerData = mapContainer?.dataset.center;
+    const initialCenter = centerData ? JSON.parse(centerData) : [-77.77, 45.86];
 
     if (mapContainer && geojsonUrl) {
         const map = new maplibregl.Map({
             container: "map",
             style: "https://api.maptiler.com/maps/9ee3fbec-1620-437f-9b35-e74ba4568490/style.json?key=WJJ16dpcfvolmmWp8Tcv",
-            center: [-77.77, 45.86], // Initial center, will update with bounds
+            center: initialCenter,
             zoom: 10,
+            maxBounds: [
+                [-79.6, 45.0],
+                [-77.0, 46.5],
+            ],
         });
 
         map.on("load", async () => {
@@ -49,7 +57,7 @@ const { geojson } = Astro.props;
                             "match",
                             ["get", "canoe"],
                             "yes",
-                            "#3D6A8E",
+                            "#2D65AE",
                             "portage",
                             "#A64D4D",
                             "#8ab4c4",

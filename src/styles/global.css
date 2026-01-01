@@ -45,8 +45,8 @@
 @layer base {
   html {
     @apply antialiased scroll-smooth;
-    background-color: var(--color-bark-50);
-    color: var(--color-bark-900);
+    background-color: var(--color-zinc-50);
+    color: var(--color-zinc-900);
   }
 
   body {
