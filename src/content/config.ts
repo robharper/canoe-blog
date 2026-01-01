@@ -1,0 +1,17 @@
+import { defineCollection, z } from 'astro:content';
+
+const tripsCollection = defineCollection({
+	type: 'content',
+	schema: ({ image }) => z.object({
+		title: z.string(),
+		date: z.date(),
+		location: z.string(),
+		excerpt: z.string(),
+		coverImage: image(),
+		mapImage: image().optional(),
+	}),
+});
+
+export const collections = {
+	'trips': tripsCollection,
+};

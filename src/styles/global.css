@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-sage-50: #f4f7f4;
+  --color-sage-100: #e3ebe3;
+  --color-sage-200: #c5d6c5;
+  --color-sage-300: #9cb69c;
+  --color-sage-400: #749374;
+  --color-sage-500: #557555;
+  --color-sage-600: #425d42;
+  --color-sage-700: #364a36;
+  --color-sage-800: #2d3b2d;
+  --color-sage-900: #263126;
+  --color-sage-950: #131a13;
+
+  --color-river-50: #f0f7f9;
+  --color-river-100: #dbebf0;
+  --color-river-200: #bbdbe4;
+  --color-river-300: #8ec3d3;
+  --color-river-400: #5ca1ba;
+  --color-river-500: #4286a0;
+  --color-river-600: #356b82;
+  --color-river-700: #2f5669;
+  --color-river-800: #2c4958;
+  --color-river-900: #273e4b;
+  --color-river-950: #152731;
+
+  --color-bark-50: #f8f6f4;
+  --color-bark-100: #efebe6;
+  --color-bark-200: #ded5cc;
+  --color-bark-300: #c6b5a7;
+  --color-bark-400: #ad9380;
+  --color-bark-500: #96765f;
+  --color-bark-600: #89604c;
+  --color-bark-700: #724e3f;
+  --color-bark-800: #5f4237;
+  --color-bark-900: #4e372f;
+  --color-bark-950: #2a1c18;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Merriweather', Georgia, serif;
+}
+
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+    background-color: var(--color-bark-50);
+    color: var(--color-bark-900);
+  }
+
+  body {
+    /* Subtle topaz map pattern using SVG */
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+}

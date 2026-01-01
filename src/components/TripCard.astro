@@ -1,0 +1,54 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+
+interface Props {
+    trip: CollectionEntry<"trips">;
+}
+
+const { trip } = Astro.props;
+---
+
+<a
+    href={`/trips/${trip.slug}`}
+    class="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-bark-200"
+>
+    <div class="relative h-48 overflow-hidden">
+        <Image
+            src={trip.data.coverImage}
+            alt={trip.data.title}
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            width={600}
+        />
+        <div
+            class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        >
+        </div>
+    </div>
+    <div class="p-5">
+        <div class="flex justify-between items-start mb-2">
+            <span
+                class="text-xs font-semibold uppercase tracking-wider text-sage-600"
+            >
+                {trip.data.location}
+            </span>
+            <span class="text-xs text-bark-400">
+                {
+                    trip.data.date.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                    })
+                }
+            </span>
+        </div>
+        <h3
+            class="text-xl font-serif font-bold text-bark-800 group-hover:text-river-700 transition-colors mb-2"
+        >
+            {trip.data.title}
+        </h3>
+        <p class="text-bark-600 text-sm line-clamp-2">
+            {trip.data.excerpt}
+        </p>
+    </div>
+</a>
