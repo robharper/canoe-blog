@@ -1,5 +1,7 @@
 ---
 import "maplibre-gl/dist/maplibre-gl.css";
+import fs from "node:fs";
+import path from "node:path";
 
 interface Props {
     geojson: string;
@@ -7,23 +9,96 @@ interface Props {
 }
 
 const { geojson, center } = Astro.props;
+
+// Server-side bounds calculation
+let serverBounds = null;
+try {
+    // Resolve the path relative to the project root/src
+    // The geojson prop might be a relative path or a public path.
+    // In our project, it's usually something like "../../assets/geo/..." or "/src/assets/geo/..."
+    // Let's handle both.
+    let relativePath = geojson;
+    if (geojson.startsWith("/")) {
+        relativePath = geojson.slice(1);
+    }
+
+    // In Astro, we can try to resolve it from the current file's directory if it's relative
+    // or from the root if it's absolute-ish.
+    const absolutePath = path.resolve(process.cwd(), relativePath);
+
+    if (fs.existsSync(absolutePath)) {
+        const fileContent = fs.readFileSync(absolutePath, "utf-8");
+        const data = JSON.parse(fileContent);
+
+        let minLng = Infinity,
+            minLat = Infinity,
+            maxLng = -Infinity,
+            maxLat = -Infinity;
+        let hasCoords = false;
+
+        data.features.forEach((feature: any) => {
+            if (feature.geometry.type === "LineString") {
+                feature.geometry.coordinates.forEach(
+                    (coord: [number, number]) => {
+                        minLng = Math.min(minLng, coord[0]);
+                        minLat = Math.min(minLat, coord[1]);
+                        maxLng = Math.max(maxLng, coord[0]);
+                        maxLat = Math.max(maxLat, coord[1]);
+                        hasCoords = true;
+                    },
+                );
+            } else if (feature.geometry.type === "Point") {
+                const coord = feature.geometry.coordinates;
+                minLng = Math.min(minLng, coord[0]);
+                minLat = Math.min(minLat, coord[1]);
+                maxLng = Math.max(maxLng, coord[0]);
+                maxLat = Math.max(maxLat, coord[1]);
+                hasCoords = true;
+            }
+        });
+
+        if (hasCoords) {
+            serverBounds = [
+                [minLng, minLat],
+                [maxLng, maxLat],
+            ];
+        }
+    }
+} catch (error) {
+    console.error("Error calculating server-side bounds:", error);
+}
 ---
 
-<div
-    id="map"
-    class="w-full h-[400px] rounded-lg shadow-md border border-bark-200"
-    data-geojson={geojson}
-    data-center={JSON.stringify(center)}
->
+<div class="relative group/map">
+    <div
+        id="map"
+        class="w-full h-[400px] rounded-lg shadow-md border border-zinc-200"
+        data-geojson={geojson}
+        data-center={JSON.stringify(center)}
+        data-bounds={JSON.stringify(serverBounds)}
+    >
+    </div>
+
+    <button
+        id="reset-map"
+        class="absolute top-4 right-4 z-10 px-3 py-1.5 bg-white/90 backdrop-blur-sm border border-zinc-200 rounded-md shadow-sm text-xs font-medium text-zinc-700 hover:bg-white hover:text-river-600 transition-all opacity-0 group-hover/map:opacity-100 focus:opacity-100"
+        aria-label="Reset map view"
+    >
+        Reset View
+    </button>
 </div>
 
 <script>
     import maplibregl from "maplibre-gl";
 
     const mapContainer = document.getElementById("map");
+    const resetButton = document.getElementById("reset-map");
     const geojsonUrl = mapContainer?.dataset.geojson;
     const centerData = mapContainer?.dataset.center;
+    const boundsData = mapContainer?.dataset.bounds;
+
     const initialCenter = centerData ? JSON.parse(centerData) : [-77.77, 45.86];
+    const serverBounds = boundsData ? JSON.parse(boundsData) : null;
 
     if (mapContainer && geojsonUrl) {
         const map = new maplibregl.Map({
@@ -35,6 +110,27 @@ const { geojson, center } = Astro.props;
                 [-79.6, 45.0],
                 [-77.0, 46.5],
             ],
+        });
+
+        // Fit bounds immediately if available from server
+        if (serverBounds) {
+            map.fitBounds(serverBounds, {
+                padding: 50,
+                animate: false, // Don't animate on first load
+            });
+        }
+
+        // Handle reset button click
+        resetButton?.addEventListener("click", () => {
+            if (serverBounds) {
+                map.fitBounds(serverBounds, {
+                    padding: 50,
+                    animate: true,
+                });
+            } else {
+                map.setCenter(initialCenter);
+                map.setZoom(10);
+            }
         });
 
         map.on("load", async () => {
@@ -51,16 +147,24 @@ const { geojson, center } = Astro.props;
                     id: "canoe",
                     type: "line",
                     source: "canoe-data",
+                    layout: {
+                        "line-cap": "round",
+                        "line-join": "round",
+                    },
                     paint: {
-                        "line-width": 5,
+                        "line-width": [
+                            "match",
+                            ["get", "canoe"],
+                            "portage",
+                            3,
+                            5,
+                        ],
                         "line-color": [
                             "match",
                             ["get", "canoe"],
-                            "yes",
-                            "#2D65AE",
                             "portage",
-                            "#A64D4D",
-                            "#8ab4c4",
+                            "#921f1c",
+                            "#34a5ee",
                         ],
                     },
                     filter: ["all", ["==", "$type", "LineString"]],
@@ -72,32 +176,23 @@ const { geojson, center } = Astro.props;
                     source: "canoe-data",
                     layout: {
                         "icon-image": "campsite",
+                        "icon-size": 1.5,
+                        "text-field": ["get", "label"],
+                        "text-font": [
+                            "Open Sans Semibold",
+                            "Arial Unicode MS Bold",
+                        ],
+                        "text-offset": [1, 0],
+                        "text-anchor": "left",
+                        "text-size": 12,
                     },
                     paint: {
-                        "icon-color": "black",
+                        "icon-color": "#265230",
+                        "text-color": "#18181b", // zinc-900
+                        "text-halo-color": "white",
+                        "text-halo-width": 1.5,
                     },
                     filter: ["==", "$type", "Point"],
-                });
-
-                // Calculate bounds
-                const bounds = new maplibregl.LngLatBounds();
-
-                data.features.forEach((feature: any) => {
-                    if (feature.geometry.type === "LineString") {
-                        feature.geometry.coordinates.forEach(
-                            (coord: [number, number]) => {
-                                bounds.extend(coord);
-                            },
-                        );
-                    } else if (feature.geometry.type === "Point") {
-                        bounds.extend(
-                            feature.geometry.coordinates as [number, number],
-                        );
-                    }
-                });
-
-                map.fitBounds(bounds, {
-                    padding: 50,
                 });
             } catch (error) {
                 console.error("Error loading GeoJSON:", error);

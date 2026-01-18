@@ -1,0 +1,664 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1604451,
+                        45.6526695
+                    ],
+                    [
+                        -78.1605605,
+                        45.6525007
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "id": "way/1182073954",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 20.80279983289202
+            },
+            "id": "way/1182073954"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1604451,
+                        45.6526695
+                    ],
+                    [
+                        -78.1603807,
+                        45.6527558
+                    ],
+                    [
+                        -78.1598818,
+                        45.652857
+                    ],
+                    [
+                        -78.1595761,
+                        45.6529583
+                    ],
+                    [
+                        -78.1593722,
+                        45.6531007
+                    ],
+                    [
+                        -78.158986,
+                        45.653232
+                    ],
+                    [
+                        -78.1584388,
+                        45.6533445
+                    ],
+                    [
+                        -78.1579882,
+                        45.6533145
+                    ],
+                    [
+                        -78.1578004,
+                        45.6532882
+                    ],
+                    [
+                        -78.1571674,
+                        45.653247
+                    ],
+                    [
+                        -78.1567437,
+                        45.6531157
+                    ],
+                    [
+                        -78.1562716,
+                        45.653127
+                    ],
+                    [
+                        -78.1557834,
+                        45.6531007
+                    ],
+                    [
+                        -78.1555098,
+                        45.653007
+                    ],
+                    [
+                        -78.1552416,
+                        45.652842
+                    ],
+                    [
+                        -78.1549949,
+                        45.652842
+                    ],
+                    [
+                        -78.1548554,
+                        45.652947
+                    ],
+                    [
+                        -78.1545228,
+                        45.6529208
+                    ],
+                    [
+                        -78.1540614,
+                        45.6527108
+                    ],
+                    [
+                        -78.1539381,
+                        45.6526658
+                    ],
+                    [
+                        -78.1535894,
+                        45.652677
+                    ],
+                    [
+                        -78.1532461,
+                        45.6526733
+                    ],
+                    [
+                        -78.152817,
+                        45.6525608
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "portage",
+                "highway": "footway",
+                "source": "CanVec 6.0 - NRCan",
+                "id": "way/78412456",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 643.694453706209
+            },
+            "id": "way/78412456"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1380927,
+                        45.6586472
+                    ],
+                    [
+                        -78.1377536,
+                        45.6587439
+                    ],
+                    [
+                        -78.1375685,
+                        45.6590494
+                    ],
+                    [
+                        -78.1373969,
+                        45.6591544
+                    ],
+                    [
+                        -78.1373298,
+                        45.6592462
+                    ],
+                    [
+                        -78.1373432,
+                        45.6594262
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "portage",
+                "highway": "footway",
+                "source": "Strava Heatmap",
+                "surface": "dirt",
+                "id": "way/78412663",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 114.63406955862992
+            },
+            "id": "way/78412663"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.138178,
+                        45.658731
+                    ],
+                    [
+                        -78.1376793,
+                        45.6593472
+                    ]
+                ]
+            },
+            "properties": {
+                "name": "Opeongo River",
+                "note": "Rapids aren't too bad going with the flow",
+                "source": "NRCan-CanVec-7.0",
+                "waterway": "river",
+                "whitewater:section_grade": "1",
+                "wikidata": "Q3491719",
+                "id": "way/1069343319",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 78.72260289669592
+            },
+            "id": "way/1069343319"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1371,
+                        45.6598115
+                    ],
+                    [
+                        -78.1373432,
+                        45.6594262
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "id": "way/1182073952",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 46.82730306125585
+            },
+            "id": "way/1182073952"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1376793,
+                        45.6593472
+                    ],
+                    [
+                        -78.1374686,
+                        45.6597496
+                    ],
+                    [
+                        -78.1371,
+                        45.6598115
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "name": "Opeongo River",
+                "source": "NRCan-CanVec-7.0",
+                "waterway": "river",
+                "wikidata": "Q3491719",
+                "id": "way/1182073951",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 77.10855063386344
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1371,
+                        45.6598115
+                    ],
+                    [
+                        -78.1368497,
+                        45.6598536
+                    ],
+                    [
+                        -78.1362306,
+                        45.6598084
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "name": "Opeongo River",
+                "source": "NRCan-CanVec-7.0",
+                "waterway": "river",
+                "wikidata": "Q3491719",
+                "id": "way/1182073951",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 68.3835540762738
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1362306,
+                        45.6598084
+                    ],
+                    [
+                        -78.1349998,
+                        45.658881
+                    ],
+                    [
+                        -78.133596,
+                        45.6585113
+                    ],
+                    [
+                        -78.1318804,
+                        45.6585013
+                    ],
+                    [
+                        -78.1312618,
+                        45.6580955
+                    ],
+                    [
+                        -78.1309247,
+                        45.6577202
+                    ],
+                    [
+                        -78.1305191,
+                        45.6572412
+                    ],
+                    [
+                        -78.129487,
+                        45.6568729
+                    ],
+                    [
+                        -78.128264,
+                        45.6568279
+                    ],
+                    [
+                        -78.1273627,
+                        45.6570078
+                    ],
+                    [
+                        -78.1269872,
+                        45.6571391
+                    ],
+                    [
+                        -78.1265044,
+                        45.6571053
+                    ],
+                    [
+                        -78.1257334,
+                        45.6569802
+                    ],
+                    [
+                        -78.1246376,
+                        45.6566104
+                    ],
+                    [
+                        -78.1240904,
+                        45.656123
+                    ],
+                    [
+                        -78.1239615,
+                        45.6554535
+                    ],
+                    [
+                        -78.1244767,
+                        45.6538882
+                    ],
+                    [
+                        -78.1240583,
+                        45.6531832
+                    ],
+                    [
+                        -78.1229603,
+                        45.6525139
+                    ],
+                    [
+                        -78.1123078,
+                        45.6511789
+                    ],
+                    [
+                        -78.1111837,
+                        45.6500034
+                    ],
+                    [
+                        -78.1100464,
+                        45.6495684
+                    ],
+                    [
+                        -78.1083191,
+                        45.6499659
+                    ],
+                    [
+                        -78.106904,
+                        45.6504933
+                    ],
+                    [
+                        -78.1059513,
+                        45.6507122
+                    ],
+                    [
+                        -78.1036444,
+                        45.6506546
+                    ],
+                    [
+                        -78.1015386,
+                        45.6500429
+                    ],
+                    [
+                        -78.0991378,
+                        45.6502434
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "name": "Opeongo River",
+                "source": "NRCan-CanVec-7.0",
+                "waterway": "river",
+                "wikidata": "Q3491719",
+                "id": "way/1182073951",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 3560.6842950537325
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.152817,
+                        45.6525608
+                    ],
+                    [
+                        -78.1523126,
+                        45.6528833
+                    ],
+                    [
+                        -78.1518728,
+                        45.6529958
+                    ],
+                    [
+                        -78.1498651,
+                        45.6534002
+                    ],
+                    [
+                        -78.1484132,
+                        45.6540891
+                    ],
+                    [
+                        -78.147519,
+                        45.6556416
+                    ],
+                    [
+                        -78.1406195,
+                        45.6571532
+                    ],
+                    [
+                        -78.139025,
+                        45.6579527
+                    ],
+                    [
+                        -78.1384572,
+                        45.6584495
+                    ],
+                    [
+                        -78.1382924,
+                        45.6586156
+                    ]
+                ]
+            },
+            "properties": {
+                "name": "Opeongo River",
+                "source": "NRCan-CanVec-7.0",
+                "waterway": "river",
+                "wikidata": "Q3491719",
+                "id": "way/1069343320",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 1382.0717806648083
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1993318,
+                        45.6477234
+                    ],
+                    [
+                        -78.1901908,
+                        45.6512034
+                    ],
+                    [
+                        -78.1845591,
+                        45.6530235
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "id": "way/1182073962",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 1291.3279490492896
+            },
+            "id": "way/1182073962"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.1845591,
+                        45.6530235
+                    ],
+                    [
+                        -78.1791616,
+                        45.6513384
+                    ],
+                    [
+                        -78.1741534,
+                        45.6499422
+                    ],
+                    [
+                        -78.1713295,
+                        45.6501834
+                    ],
+                    [
+                        -78.1678457,
+                        45.6510714
+                    ],
+                    [
+                        -78.1613517,
+                        45.6523808
+                    ],
+                    [
+                        -78.1605605,
+                        45.6525007
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "name": "Opeongo River",
+                "source": "NRCan-CanVec-7.0",
+                "waterway": "river",
+                "wikidata": "Q3491719",
+                "id": "way/1040595833",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 1976.2029156449437
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -78.0991378,
+                        45.6502434
+                    ],
+                    [
+                        -78.0984853,
+                        45.6497947
+                    ]
+                ]
+            },
+            "properties": {
+                "canoe": "yes",
+                "id": "way/1182073950",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[route=canoe](area.searchArea);\n    );\n    (>;);\n    ",
+                    "name": "canoe_route",
+                    "only": [
+                        "LineString"
+                    ]
+                },
+                "length": 71.14574029465534
+            },
+            "id": "way/1182073950"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -78.1893943,
+                    45.6467196
+                ]
+            },
+            "properties": {
+                "tourism": "camp_site",
+                "id": "node/5634873043",
+                "featureGroup": {
+                    "query": "\n    area(id:3600910784)->.searchArea;\n    (\n    nwr[tourism=camp_site](area.searchArea);\n    );\n    ",
+                    "name": "campsite"
+                }
+            },
+            "id": "node/5634873043"
+        }
+    ]
+}

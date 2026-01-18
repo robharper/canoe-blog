@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Add multiple geometries from one GeoJSON source</title>
+    <meta property="og:description" content="Add a polygon and circle layer from the same GeoJSON source." />
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css' />
+    <script src='https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js'></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  // Because features come from tiled vector data,
+  // feature geometries may be split
+  // or duplicated across tile boundaries.
+  // As a result, features may appear
+  // multiple times in query results.
+  function getUniqueFeatures(features, comparatorProperty) {
+      const uniqueIds = new Set();
+      const uniqueFeatures = [];
+      for (const feature of features) {
+          const id = feature.properties[comparatorProperty];
+          if (!uniqueIds.has(id)) {
+              uniqueIds.add(id);
+              uniqueFeatures.push(feature);
+          }
+      }
+      return uniqueFeatures;
+  }
+
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://api.maptiler.com/maps/9ee3fbec-1620-437f-9b35-e74ba4568490/style.json?key=WJJ16dpcfvolmmWp8Tcv',
+    center: [-78.4229504388554, 45.79198521979407],
+    maxBounds: [
+      [-79.6, 45.0],
+      [-77.0, 46.5]
+    ],
+    zoom: 9
+  });
+
+  map.on('load', () => {
+    fetch('source-data/combined.geo.json')
+      .then(response => response.json())
+      .then(data => {
+        map.addSource('canoe-data', {
+            'type': 'geojson',
+            'data': data
+        });
+
+        map.addLayer({
+          'id': 'canoe',
+          'type': 'line',
+          'source': 'canoe-data',
+          'paint': {
+              'line-width': 5,
+              'line-color': [
+                'match', ['get', 'canoe'],
+                'yes', '#e5cc43',
+                'portage', '#bb0000',
+                'black'
+              ]
+          },
+          'filter': ["all",
+            ['==', '$type', 'LineString']
+          ]
+        });
+
+        map.addLayer({
+          'id': 'campsites',
+          'type': 'symbol',
+          'source': 'canoe-data',
+          'layout': {
+            'icon-image': 'campsite'
+          },
+          'paint': {
+              'icon-color': 'black'
+          },
+          'filter': ['==', '$type', 'Point']
+        });
+
+        map.addLayer({
+          'id': 'canoe-highlighted',
+          'type': 'line',
+          'source': 'canoe-data',
+          'paint': {
+              'line-width': 2,
+              'line-color': 'magenta'
+          },
+          'filter': ["all",
+            ['==', '$type', 'LineString'],
+            ['==', 'trip', ''],
+          ]
+        });
+      });
+
+      map.on('mousemove', 'canoe', (e) => {
+        if (e.features.length > 0) {
+          console.log(e.features[0].properties.trip)
+          map.setFilter('canoe-highlighted', ['all',
+            ['==', '$type', 'LineString'],
+            ['==', 'trip', e.features[0].properties.trip],
+          ]);
+        }
+      });
+
+      map.on('mouseleave', 'canoe', () => {
+        map.setFilter('canoe-highlighted', ['all',
+          ['==', '$type', 'LineString'],
+          ['==', 'trip', ''],
+        ]);
+      });
+  });
+</script>
+</body>
+</html>
