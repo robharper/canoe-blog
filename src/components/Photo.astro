@@ -1,0 +1,38 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+    src: any;
+    alt: string;
+    width?: number;
+    height?: number;
+    class?: string;
+    imageClass?: string;
+}
+
+const {
+    src,
+    alt,
+    width,
+    height,
+    class: className,
+    imageClass,
+    ...rest
+} = Astro.props;
+---
+
+<figure class:list={["my-8 flex flex-col items-center", className]}>
+    <Image
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        class:list={["rounded-lg shadow-md", imageClass]}
+        {...rest}
+    />
+    <figcaption
+        class="mt-0 text-sm text-neutral-600 italic text-center px-4 max-w-2xl"
+    >
+        <slot />
+    </figcaption>
+</figure>
