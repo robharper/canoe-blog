@@ -5154,6 +5154,19 @@
                 }
             },
             "id": "node/6859081844"
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "tourism": "access_point"
+            },
+            "geometry": {
+                "coordinates": [
+                    -78.70669358444471,
+                    45.535034971489296
+                ],
+                "type": "Point"
+            }
         }
     ]
 }

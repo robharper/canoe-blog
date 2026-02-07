@@ -884,6 +884,19 @@
         ],
         "type": "LineString"
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "tourism": "access_point"
+      },
+      "geometry": {
+        "coordinates": [
+          -78.87616589542007,
+          46.0887802283676
+        ],
+        "type": "Point"
+      }
     }
   ]
 }

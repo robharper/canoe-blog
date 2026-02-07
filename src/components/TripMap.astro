@@ -23,8 +23,10 @@ try {
     }
 
     // In Astro, we can try to resolve it from the current file's directory if it's relative
-    // or from the root if it's absolute-ish.
-    const absolutePath = path.resolve(process.cwd(), relativePath);
+    // or from the public directory if it starts with /
+    const absolutePath = geojson.startsWith("/")
+        ? path.resolve(process.cwd(), "public", relativePath)
+        : path.resolve(process.cwd(), relativePath);
 
     if (fs.existsSync(absolutePath)) {
         const fileContent = fs.readFileSync(absolutePath, "utf-8");
@@ -72,7 +74,7 @@ try {
 <div class="relative group/map">
     <div
         id="map"
-        class="w-full h-[400px] rounded-lg shadow-md border border-zinc-200"
+        class="w-full aspect-video rounded-lg shadow-md border border-zinc-200"
         data-geojson={geojson}
         data-center={JSON.stringify(center)}
         data-bounds={JSON.stringify(serverBounds)}
@@ -163,8 +165,8 @@ try {
                             "match",
                             ["get", "canoe"],
                             "portage",
-                            "#921f1c",
-                            "#34a5ee",
+                            "#b11d1b",
+                            "#2584cb",
                         ],
                     },
                     filter: ["all", ["==", "$type", "LineString"]],
@@ -175,19 +177,27 @@ try {
                     type: "symbol",
                     source: "canoe-data",
                     layout: {
-                        "icon-image": "campsite",
+                        "icon-image": [
+                            "match",
+                            ["get", "tourism"],
+                            "camp_site",
+                            "campsite",
+                            "circle",
+                        ],
                         "icon-size": 1.5,
                         "text-field": ["get", "label"],
                         "text-font": [
-                            "Open Sans Semibold",
+                            "Open Sans Bold",
                             "Arial Unicode MS Bold",
                         ],
                         "text-offset": [1, 0],
                         "text-anchor": "left",
-                        "text-size": 12,
+                        "text-size": 14,
                     },
                     paint: {
-                        "icon-color": "#265230",
+                        "icon-color": "#3ea34b",
+                        "icon-halo-color": "black",
+                        "icon-halo-width": 1,
                         "text-color": "#18181b", // zinc-900
                         "text-halo-color": "white",
                         "text-halo-width": 1.5,

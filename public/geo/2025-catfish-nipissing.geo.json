@@ -5856,6 +5856,20 @@
                 "type": "LineString"
             },
             "id": 68
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "tourism": "access_point"
+            },
+            "geometry": {
+                "coordinates": [
+                    -78.48596068743899,
+                    46.02566500252368
+                ],
+                "type": "Point"
+            },
+            "id": 69
         }
     ]
 }
