@@ -1,6 +1,6 @@
 ---
-title: "Welcome Louisa 2022"
-date: 2022-01-01
+title: "Pen - Harry - Louisa"
+date: 2022-07-01
 location: "Algonquin Provincial Park, Ontario"
 excerpt: "A placeholder description for the trip to Welcome Louisa."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"

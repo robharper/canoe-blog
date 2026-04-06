@@ -1,12 +1,11 @@
 ---
-title: "Tom Thompson"
-date: 2020-07-01
-location: "Algonquin Provincial Park, Ontario"
+title: "Happy Isle, La Muir, Proulx Lake, and Opeongo"
+date: 2026-07-01
+location: "Opeongo Access"
 excerpt: "A placeholder description for the trip to Tom Thompson."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
-geojson: "/geo/2020-tom-thompson.geo.json"
-outAndBack: true
-portageCount: 2
+geojson: "/geo/2026-happy-isle-proulx.geo.json"
+portageCount: 10
 ---
 
 A placeholder trip description for Tom Thompson.

@@ -1,10 +1,12 @@
 ---
-title: "Crotch Booth 2025"
+title: "Booth Lake"
 date: 2025-05-01
-location: "Crotch Lake Access"
+location: "Crotch Lake"
 excerpt: "A placeholder description for the trip to Crotch Booth."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
 geojson: "/geo/2025-crotch-booth.geo.json"
+outAndBack: true
+portageCount: 3
 ---
 
 A placeholder trip description for Crotch Booth.

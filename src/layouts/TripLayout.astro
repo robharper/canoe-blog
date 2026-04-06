@@ -3,18 +3,45 @@ import BaseLayout from "./BaseLayout.astro";
 import TripMap from "../components/TripMap.astro";
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import { calculateTripStats } from "../util/geoStats";
+import TripKeyDetails, {
+    type TripStats,
+} from "../components/TripKeyDetails.astro";
+import fs from "node:fs";
+import path from "node:path";
 
 interface Props {
     trip: CollectionEntry<"trips">;
 }
 
 const { trip } = Astro.props;
+
+let stats: TripStats | null = null;
+if (trip.data.geojson) {
+    try {
+        const fullPath = path.join(process.cwd(), "public", trip.data.geojson);
+        const geojsonContent = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
+        stats = calculateTripStats(geojsonContent) as TripStats;
+    } catch (e) {
+        console.error(`Error calculating stats for ${trip.data.title}:`, e);
+    }
+}
+
+// Manual overrides
+if (stats && trip.data.portageCount !== undefined) {
+    stats.portageCount = trip.data.portageCount;
+}
+
+if (stats && trip.data.outAndBack) {
+    stats.paddleLengthKm = Math.round(stats.paddleLengthKm * 2 * 10) / 10;
+    stats.portageLengthKm = Math.round(stats.portageLengthKm * 2 * 10) / 10;
+}
 ---
 
 <BaseLayout title={trip.data.title}>
-    <article class="max-w-3xl mx-auto">
+    <article>
         <!-- Hero Section -->
-        <header class="mb-10 text-center">
+        <header class="max-w-4xl mx-auto px-4 md:px-8 mb-10 text-center">
             <h1
                 class="text-4xl md:text-5xl font-bold text-zinc-900 mb-8 leading-tight tracking-tight"
             >
@@ -38,53 +65,57 @@ const { trip } = Astro.props;
         </header>
 
         <!-- Cover Image -->
-        <div
-            class="mb-12 rounded-xl overflow-hidden shadow-lg border border-zinc-200"
-        >
+        <div class="mb-12 w-full">
             <Image
                 src={trip.data.coverImage}
                 alt={trip.data.title}
-                class="w-full h-auto"
-                width={1200}
+                class="w-full aspect-[2] object-cover"
+                width={1920}
                 quality="high"
             />
         </div>
 
-        <!-- Map Section (if available) -->
+        <!-- Key Details Section -->
+        {stats && <TripKeyDetails stats={stats} />}
+
         <!-- Map Section (if available) -->
         {
             (trip.data.geojson || trip.data.mapImage) && (
-                <div class="prose mx-auto">
-                    <h2>Route Map</h2>
+                <div class="max-w-4xl mx-auto px-4 md:px-8">
+                    <div class="prose mx-auto">
+                        <h2>Route Map</h2>
 
-                    {trip.data.geojson ? (
-                        <TripMap
-                            geojson={trip.data.geojson}
-                            center={
-                                trip.data.mapCenter as
-                                    | [number, number]
-                                    | undefined
-                            }
-                        />
-                    ) : (
-                        <Image
-                            src={trip.data.mapImage!}
-                            alt={`Map of ${trip.data.title}`}
-                            class="w-full h-auto rounded border border-zinc-100 grayscale hover:grayscale-0 transition-all duration-500"
-                        />
-                    )}
+                        {trip.data.geojson ? (
+                            <TripMap
+                                geojson={trip.data.geojson}
+                                center={
+                                    trip.data.mapCenter as
+                                        | [number, number]
+                                        | undefined
+                                }
+                            />
+                        ) : (
+                            <Image
+                                src={trip.data.mapImage!}
+                                alt={`Map of ${trip.data.title}`}
+                                class="w-full h-auto rounded border border-zinc-100 grayscale hover:grayscale-0 transition-all duration-500"
+                            />
+                        )}
+                    </div>
                 </div>
             )
         }
 
         <!-- Content -->
-        <div class="prose prose-zinc mx-auto my-16 text-zinc-900">
+        <div class="prose prose-zinc mx-auto my-16 text-zinc-900 px-4 md:px-0">
             <slot />
         </div>
     </article>
 
     <!-- Navigation/Back -->
-    <div class="mt-16 pt-8 border-t border-zinc-200 text-center">
+    <div
+        class="max-w-4xl mx-auto px-4 md:px-8 mt-16 pt-8 border-t border-zinc-200 text-center"
+    >
         <a
             href="/"
             class="inline-flex items-center gap-2 text-river-700 hover:text-river-900 font-medium transition-colors"

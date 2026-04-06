@@ -26,27 +26,27 @@ const { trip } = Astro.props;
         </div>
     </div>
     <div class="p-5">
-        <div class="flex justify-between items-start mb-2">
+        <div class="mb-1">
             <span
                 class="text-xs font-semibold uppercase tracking-wider text-sage-600"
             >
                 {trip.data.location}
             </span>
-            <span class="text-xs text-zinc-400">
-                {
-                    trip.data.date.toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                    })
-                }
-            </span>
         </div>
         <h3
-            class="text-xl font-serif font-bold text-zinc-800 group-hover:text-river-700 transition-colors mb-2"
+            class="text-xl font-serif font-bold text-zinc-800 group-hover:text-river-700 transition-colors mb-1"
         >
             {trip.data.title}
         </h3>
+        <div class="text-xs text-zinc-400 mb-3">
+            {
+                trip.data.date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                })
+            }
+        </div>
         <p class="text-zinc-600 text-sm line-clamp-2">
             {trip.data.excerpt}
         </p>

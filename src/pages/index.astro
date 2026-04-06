@@ -9,19 +9,21 @@ const trips = (await getCollection("trips")).sort(
 ---
 
 <BaseLayout title="Home">
-	<div class="text-center max-w-2xl mx-auto mb-16">
-		<h1
-			class="text-4xl md:text-5xl font-serif font-bold text-zinc-800 mb-4"
-		>
-			Stories from the Water
-		</h1>
-		<p class="text-zinc-600 text-lg leading-relaxed">
-			A collection of canoe trips, map notes, and campfire stories from
-			the backcountry.
-		</p>
-	</div>
+	<div class="max-w-4xl mx-auto px-4 md:px-8">
+		<div class="text-center max-w-2xl mx-auto mb-16">
+			<h1
+				class="text-4xl md:text-5xl font-serif font-bold text-zinc-800 mb-4"
+			>
+				Trip Logs
+			</h1>
+			<p class="text-zinc-600 text-lg leading-relaxed">
+				A collection of canoe trips, map notes, and campfire stories
+				from the backcountry.
+			</p>
+		</div>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-		{trips.map((trip) => <TripCard trip={trip} />)}
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+			{trips.map((trip) => <TripCard trip={trip} />)}
+		</div>
 	</div>
 </BaseLayout>

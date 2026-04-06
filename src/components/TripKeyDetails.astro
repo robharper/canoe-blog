@@ -1,0 +1,63 @@
+---
+export interface TripStats {
+    portageCount: number;
+    portageLengthKm: number;
+    paddleLengthKm: number;
+    nights: number;
+}
+
+interface Props {
+    stats: TripStats;
+}
+
+const { stats } = Astro.props;
+---
+
+<div class="max-w-4xl mx-auto px-4 md:px-8 mb-12">
+    <div
+        class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-zinc-50 rounded-xl border border-zinc-100"
+    >
+        <div class="flex flex-col items-center text-center">
+            <span
+                class="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1"
+            >
+                Paddle Distance
+            </span>
+            <span class="text-2xl font-bold text-river-700">
+                {stats.paddleLengthKm}{" "}
+                <small class="text-sm font-normal text-zinc-400"> km </small>
+            </span>
+        </div>
+        <div class="flex flex-col items-center text-center">
+            <span
+                class="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1"
+            >
+                Portages
+            </span>
+            <span class="text-2xl font-bold text-bark-700">
+                {stats.portageCount}
+            </span>
+        </div>
+        <div class="flex flex-col items-center text-center">
+            <span
+                class="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1"
+            >
+                Portage Distance
+            </span>
+            <span class="text-2xl font-bold text-bark-700">
+                {stats.portageLengthKm}{" "}
+                <small class="text-sm font-normal text-zinc-400"> km </small>
+            </span>
+        </div>
+        <div class="flex flex-col items-center text-center">
+            <span
+                class="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-1"
+            >
+                Nights
+            </span>
+            <span class="text-2xl font-bold text-sage-700">
+                {stats.nights}
+            </span>
+        </div>
+    </div>
+</div>

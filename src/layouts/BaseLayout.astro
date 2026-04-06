@@ -26,14 +26,14 @@ const { title } = Astro.props;
 	</head>
 	<body class="min-h-screen flex flex-col font-sans text-zinc-900 bg-zinc-50">
 		<header
-			class="w-full py-6 px-4 md:px-8 border-b border-zinc-200 bg-white/50 backdrop-blur-sm sticky top-0 z-50"
+			class="w-full py-6 px-4 md:px-8 border-b border-gray-100 bg-gray-50/50 backdrop-blur-sm sticky top-0 z-50"
 		>
 			<div class="max-w-4xl mx-auto flex justify-between items-center">
 				<a
 					href="/"
 					class="text-2xl font-serif font-bold text-sage-800 tracking-tight hover:text-sage-600 transition-colors"
 				>
-					Canoe<span class="text-river-600">Log</span>
+					Backcountry <span class="text-bark-700">Bloodletting</span>
 				</a>
 				<nav>
 					<a
@@ -45,9 +45,7 @@ const { title } = Astro.props;
 			</div>
 		</header>
 
-		<main
-			class="flex-1 w-full max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-12 bg-white"
-		>
+		<main class="flex-1 w-full py-8 md:py-12 bg-white">
 			<slot />
 		</main>
 
