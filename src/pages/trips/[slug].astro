@@ -1,17 +1,17 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import TripLayout from "../../layouts/TripLayout.astro";
 
 export async function getStaticPaths() {
     const trips = await getCollection("trips");
     return trips.map((trip) => ({
-        params: { slug: trip.slug },
+        params: { slug: trip.id },
         props: { trip },
     }));
 }
 
 const { trip } = Astro.props;
-const { Content } = await trip.render();
+const { Content } = await render(trip);
 ---
 
 <TripLayout trip={trip}>

@@ -18,23 +18,26 @@ export default {
                         lineHeight: 1.6,
                         'h1, h2, h3, h4': {
                             fontFamily: theme('fontFamily.heading'),
-                            fontWeight: '800',
-                            letterSpacing: '-0.02rem',
+                            letterSpacing: '-0.04rem',
                         },
                         p: {
                             fontSize: '1.25rem',
                         },
                         h1: {
                             fontSize: '2.4rem',
+                            fontWeight: '900',
                         },
                         h2: {
-                            fontSize: '1.6rem',
+                            fontSize: '1.65rem',
+                            fontWeight: '900',
                         },
                         h3: {
-                            fontSize: '1.5rem',
+                            fontSize: '1.45rem',
+                            fontWeight: '800',
                         },
                         h4: {
-                            fontSize: '1.4rem',
+                            fontSize: '1.35rem',
+                            fontWeight: '600',
                         },
                     },
                 }
