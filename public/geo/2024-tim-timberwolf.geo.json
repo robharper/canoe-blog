@@ -3,6 +3,17 @@
   "features": [
     {
       "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [
+          -78.98674523861749,
+          45.66807922596291
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -11,6 +22,7 @@
         ]
       },
       "properties": {
+        "label": "2",
         "tourism": "camp_site",
         "id": "node/6859081765"
       },
@@ -26,6 +38,7 @@
         ]
       },
       "properties": {
+        "label": "1",
         "tourism": "camp_site",
         "id": "node/6859081898"
       },
@@ -41,6 +54,7 @@
         ]
       },
       "properties": {
+        "label": "3",
         "tourism": "camp_site",
         "id": "node/6859081966"
       },

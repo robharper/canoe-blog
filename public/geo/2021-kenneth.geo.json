@@ -3,6 +3,17 @@
   "features": [
     {
       "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "coordinates": [
+          -78.59318235379756,
+          45.55183942931811
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
       "geometry": {
         "type": "LineString",
         "coordinates": [

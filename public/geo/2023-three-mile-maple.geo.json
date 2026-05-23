@@ -11,6 +11,7 @@
         ]
       },
       "properties": {
+        "label": "3",
         "tourism": "camp_site",
         "id": "node/6859081499"
       }
@@ -25,6 +26,7 @@
         ]
       },
       "properties": {
+        "label": "2",
         "tourism": "camp_site",
         "id": "node/6859081633"
       }
@@ -39,6 +41,7 @@
         ]
       },
       "properties": {
+        "label": "1",
         "tourism": "camp_site",
         "id": "node/6859081896"
       }

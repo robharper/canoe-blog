@@ -214,7 +214,7 @@ try {
                                         1,
                                         0.3,
                                     ]);
-                                    map.setPaintProperty("canoe", "icon-opacity", [
+                                    map.setPaintProperty("campsites", "icon-opacity", [
                                         "case",
                                         ["==", ["get", interactiveProp], val],
                                         1,
@@ -227,7 +227,7 @@ try {
                         map.on("mouseleave", layerId, () => {
                             map.getCanvas().style.cursor = "";
                             map.setPaintProperty("canoe", "line-opacity", 1);
-                            map.setPaintProperty("canoe", "icon-opacity", 1);
+                            map.setPaintProperty("campsites", "icon-opacity", 1);
                         });
 
                         map.on("click", layerId, (e) => {

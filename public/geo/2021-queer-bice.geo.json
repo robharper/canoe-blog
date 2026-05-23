@@ -1,7 +1,8 @@
 {"type":"FeatureCollection", "features": [
-{"type":"Feature","geometry":{"type":"Point","coordinates":[-78.8790736,45.7117826]},"properties":{"tourism":"camp_site","id":"node/6859081889"},"id":"node/6859081889"},
-{"type":"Feature","geometry":{"type":"Point","coordinates":[-78.9334618,45.6950658]},"properties":{"tourism":"camp_site","id":"node/6859082003"},"id":"node/6859082003"},
-{"type":"Feature","geometry":{"type":"Point","coordinates":[-78.9391597,45.6717284]},"properties":{"tourism":"camp_site","id":"node/6859082043"},"id":"node/6859082043"},
+{"type": "Feature","properties": {},"geometry": {"coordinates": [-78.98674523861749,45.66807922596291],"type": "Point"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-78.8790736,45.7117826]},"properties":{"tourism":"camp_site","id":"node/6859081889", "label": "2"},"id":"node/6859081889"},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-78.9334618,45.6950658]},"properties":{"tourism":"camp_site","id":"node/6859082003", "label": "3"},"id":"node/6859082003"},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[-78.9391597,45.6717284]},"properties":{"tourism":"camp_site","id":"node/6859082043", "label": "1"},"id":"node/6859082043"},
 {"type":"Feature","geometry":{"type":"LineString","coordinates":[[-78.9864582,45.6679477],[-78.9867679,45.6680444]]},"properties":{"canoe":"yes","id":"way/1184505565","length":26.35811296491701},"id":"way/1184505565"},
 {"type":"Feature","geometry":{"type":"LineString","coordinates":[[-78.9824322,45.667749],[-78.9822525,45.6680583],[-78.9824751,45.6682851],[-78.9821371,45.6689224]]},"properties":{"canoe":"portage","highway":"footway","source":"Strava Heatmap","id":"way/975803958","length":146.0979700916563},"id":"way/975803958"},
 {"type":"Feature","geometry":{"type":"LineString","coordinates":[[-78.9712551,45.6721333],[-78.9795971,45.6721087],[-78.9821371,45.6689224]]},"properties":{"canoe":"yes","id":"way/1184505567","length":1053.7333696234307},"id":"way/1184505567"},
