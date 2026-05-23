@@ -2,10 +2,15 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TripCard from "../components/TripCard.astro";
 import { getCollection } from "astro:content";
+import TripMap from "../components/TripMap.astro";
 
 const trips = (await getCollection("trips")).sort(
 	(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
+
+const geojsonFiles = import.meta.glob('/public/geo/all.geo.json', { eager: true });
+const allGeojsonFile = geojsonFiles['/public/geo/all.geo.json'] as any;
+const geojson = allGeojsonFile?.default || allGeojsonFile;
 ---
 
 <BaseLayout title="Home">
@@ -22,8 +27,28 @@ const trips = (await getCollection("trips")).sort(
 			</p>
 		</div>
 
+		<div class="my-8">
+			<TripMap
+					geojson={"/geo/all.geo.json"}
+					interactive="slug"
+			/>
+		</div>
+
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 			{trips.map((trip) => <TripCard trip={trip} />)}
 		</div>
 	</div>
 </BaseLayout>
+
+<script>
+	import { navigate } from "astro:transitions/client";
+
+	const mapElement = document.getElementById("map");
+	if (mapElement) {
+		(mapElement as any).onMapClick = (slug: string) => {
+			if (slug) {
+				navigate(`/trips/${slug}`);
+			}
+		};
+	}
+</script>

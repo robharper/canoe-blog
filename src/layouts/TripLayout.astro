@@ -7,8 +7,6 @@ import { calculateTripStats } from "../util/geoStats";
 import TripKeyDetails, {
     type TripStats,
 } from "../components/TripKeyDetails.astro";
-import fs from "node:fs";
-import path from "node:path";
 
 interface Props {
     trip: CollectionEntry<"trips">;
@@ -19,9 +17,17 @@ const { trip } = Astro.props;
 let stats: TripStats | null = null;
 if (trip.data.geojson) {
     try {
-        const fullPath = path.join(process.cwd(), "public", trip.data.geojson);
-        const geojsonContent = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
-        stats = calculateTripStats(geojsonContent) as TripStats;
+        const geojsonFiles = import.meta.glob('/public/geo/*.json', { eager: true }) as Record<string, any>;
+        const normalizedPath = trip.data.geojson.startsWith('/') ? trip.data.geojson : `/${trip.data.geojson}`;
+        const key = `/public${normalizedPath}`;
+        const file = geojsonFiles[key];
+        
+        if (file) {
+            const geojsonContent = file.default || file;
+            stats = calculateTripStats(geojsonContent) as TripStats;
+        } else {
+            console.warn(`GeoJSON file not found: ${key}`);
+        }
     } catch (e) {
         console.error(`Error calculating stats for ${trip.data.title}:`, e);
     }

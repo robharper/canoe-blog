@@ -1,37 +1,29 @@
 ---
 import "maplibre-gl/dist/maplibre-gl.css";
-import fs from "node:fs";
-import path from "node:path";
 
 interface Props {
     geojson: string;
     center?: [number, number];
+    interactive?: string | null;
 }
 
-const { geojson, center } = Astro.props;
+const { geojson, center, interactive = null } = Astro.props;
 
 // Server-side bounds calculation
 let serverBounds = null;
 try {
-    // Resolve the path relative to the project root/src
-    // The geojson prop might be a relative path or a public path.
-    // In our project, it's usually something like "../../assets/geo/..." or "/src/assets/geo/..."
-    // Let's handle both.
-    let relativePath = geojson;
-    if (geojson.startsWith("/")) {
-        relativePath = geojson.slice(1);
+    const geojsonFiles = import.meta.glob('/public/geo/*.json', { eager: true }) as Record<string, any>;
+    const normalizedPath = geojson.startsWith('/') ? geojson : `/${geojson}`;
+    const key = `/public${normalizedPath}`;
+
+    let data;
+    if (geojsonFiles[key]) {
+        data = geojsonFiles[key].default || geojsonFiles[key];
+    } else {
+        console.warn(`GeoJSON file not found for map: ${key}`);
     }
 
-    // In Astro, we can try to resolve it from the current file's directory if it's relative
-    // or from the public directory if it starts with /
-    const absolutePath = geojson.startsWith("/")
-        ? path.resolve(process.cwd(), "public", relativePath)
-        : path.resolve(process.cwd(), relativePath);
-
-    if (fs.existsSync(absolutePath)) {
-        const fileContent = fs.readFileSync(absolutePath, "utf-8");
-        const data = JSON.parse(fileContent);
-
+    if (data && data.features) {
         let minLng = Infinity,
             minLat = Infinity,
             maxLng = -Infinity,
@@ -78,6 +70,7 @@ try {
         data-geojson={geojson}
         data-center={JSON.stringify(center)}
         data-bounds={JSON.stringify(serverBounds)}
+        data-interactive={interactive}
     >
     </div>
 
@@ -98,6 +91,7 @@ try {
     const geojsonUrl = mapContainer?.dataset.geojson;
     const centerData = mapContainer?.dataset.center;
     const boundsData = mapContainer?.dataset.bounds;
+    const interactiveProp = mapContainer?.dataset.interactive;
 
     const initialCenter = centerData ? JSON.parse(centerData) : [-77.77, 45.86];
     const serverBounds = boundsData ? JSON.parse(boundsData) : null;
@@ -169,7 +163,7 @@ try {
                             "#2584cb",
                         ],
                     },
-                    filter: ["all", ["==", "$type", "LineString"]],
+                    filter: ["==", "$type", "LineString"],
                 });
 
                 map.addLayer({
@@ -204,6 +198,49 @@ try {
                     },
                     filter: ["==", "$type", "Point"],
                 });
+
+                if (interactiveProp) {
+                    const layers = ["canoe", "campsites"];
+
+                    layers.forEach(layerId => {
+                        map.on("mousemove", layerId, (e) => {
+                            if (e.features && e.features.length > 0) {
+                                const val = e.features[0].properties[interactiveProp];
+                                if (val) {
+                                    map.getCanvas().style.cursor = "pointer";
+                                    map.setPaintProperty("canoe", "line-opacity", [
+                                        "case",
+                                        ["==", ["get", interactiveProp], val],
+                                        1,
+                                        0.3,
+                                    ]);
+                                    map.setPaintProperty("canoe", "icon-opacity", [
+                                        "case",
+                                        ["==", ["get", interactiveProp], val],
+                                        1,
+                                        0.3,
+                                    ]);
+                                }
+                            }
+                        });
+
+                        map.on("mouseleave", layerId, () => {
+                            map.getCanvas().style.cursor = "";
+                            map.setPaintProperty("canoe", "line-opacity", 1);
+                            map.setPaintProperty("canoe", "icon-opacity", 1);
+                        });
+
+                        map.on("click", layerId, (e) => {
+                            if (e.features && e.features.length > 0) {
+                                const val = e.features[0].properties[interactiveProp];
+                                const callback = (mapContainer as any)?.onMapClick;
+                                if (typeof callback === "function") {
+                                    callback(val);
+                                }
+                            }
+                        });
+                    });
+                }
             } catch (error) {
                 console.error("Error loading GeoJSON:", error);
             }
