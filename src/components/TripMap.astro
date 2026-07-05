@@ -12,6 +12,9 @@ const { geojson, center, interactive = null, showPortageTooltips = false } = Ast
 
 const geojsonPath = geojson.startsWith("/") ? geojson.slice(1) : geojson;
 const geojsonUrl = `${import.meta.env.BASE_URL}${geojsonPath}`;
+const interactiveHref = interactive
+    ? `${import.meta.env.BASE_URL}trips/`
+    : null;
 
 // Server-side bounds calculation
 let serverBounds = null;
@@ -75,6 +78,7 @@ try {
         data-center={JSON.stringify(center)}
         data-bounds={JSON.stringify(serverBounds)}
         data-interactive={interactive}
+        data-interactive-href={interactiveHref}
         data-portage-tooltips={showPortageTooltips ? "true" : null}
     >
     </div>
@@ -108,6 +112,7 @@ try {
 
 <script>
     import maplibregl from "maplibre-gl";
+    import { navigate } from "astro:transitions/client";
 
     function adjustHexColor(hex: string, amount: number): string {
         const num = parseInt(hex.slice(1), 16);
@@ -158,6 +163,7 @@ try {
     const centerData = mapContainer?.dataset.center;
     const boundsData = mapContainer?.dataset.bounds;
     const interactiveProp = mapContainer?.dataset.interactive;
+    const interactiveHref = mapContainer?.dataset.interactiveHref;
     const portageTooltips = mapContainer?.dataset.portageTooltips === "true";
 
     const initialCenter = centerData ? JSON.parse(centerData) : [-77.77, 45.86];
@@ -345,9 +351,8 @@ try {
                         map.on("click", layerId, (e) => {
                             if (e.features && e.features.length > 0) {
                                 const val = e.features[0].properties[interactiveProp];
-                                const callback = (mapContainer as any)?.onMapClick;
-                                if (typeof callback === "function") {
-                                    callback(val);
+                                if (val && interactiveHref) {
+                                    navigate(`${interactiveHref}${val}`);
                                 }
                             }
                         });

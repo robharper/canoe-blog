@@ -98,23 +98,19 @@ if (stats && trip.data.outAndBack) {
         {
             (trip.data.geojson || trip.data.mapImage) && (
                 <div class="max-w-4xl mx-auto px-4 mb-12 md:px-8">
-                    <div class="prose mx-auto">
-                        <h2>Route Map</h2>
-
-                        {trip.data.geojson ? (
-                            <TripMap
-                                geojson={trip.data.geojson}
-                                center={
-                                    trip.data.mapCenter as
-                                        | [number, number]
-                                        | undefined
-                                }
-                                showPortageTooltips={true}
-                            />
-                        ) : (
-                            "No map"
-                        )}
-                    </div>
+                    {trip.data.geojson ? (
+                        <TripMap
+                            geojson={trip.data.geojson}
+                            center={
+                                trip.data.mapCenter as
+                                    | [number, number]
+                                    | undefined
+                            }
+                            showPortageTooltips={true}
+                        />
+                    ) : (
+                        "No map"
+                    )}
                 </div>
             )
         }
