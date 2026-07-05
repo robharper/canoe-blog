@@ -5,9 +5,10 @@ interface Props {
     geojson: string;
     center?: [number, number];
     interactive?: string | null;
+    showPortageTooltips?: boolean;
 }
 
-const { geojson, center, interactive = null } = Astro.props;
+const { geojson, center, interactive = null, showPortageTooltips = false } = Astro.props;
 
 const geojsonPath = geojson.startsWith("/") ? geojson.slice(1) : geojson;
 const geojsonUrl = `${import.meta.env.BASE_URL}${geojsonPath}`;
@@ -74,6 +75,7 @@ try {
         data-center={JSON.stringify(center)}
         data-bounds={JSON.stringify(serverBounds)}
         data-interactive={interactive}
+        data-portage-tooltips={showPortageTooltips ? "true" : null}
     >
     </div>
 
@@ -85,6 +87,24 @@ try {
         Reset View
     </button>
 </div>
+
+<style>
+    :global(.portage-tooltip .maplibregl-popup-content) {
+        background: #b11d1b;
+        color: white;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 4px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        white-space: nowrap;
+    }
+
+    :global(.portage-tooltip .maplibregl-popup-tip) {
+        border-top-color: #b11d1b;
+    }
+</style>
 
 <script>
     import maplibregl from "maplibre-gl";
@@ -138,6 +158,7 @@ try {
     const centerData = mapContainer?.dataset.center;
     const boundsData = mapContainer?.dataset.bounds;
     const interactiveProp = mapContainer?.dataset.interactive;
+    const portageTooltips = mapContainer?.dataset.portageTooltips === "true";
 
     const initialCenter = centerData ? JSON.parse(centerData) : [-77.77, 45.86];
     const serverBounds = boundsData ? JSON.parse(boundsData) : null;
@@ -243,6 +264,36 @@ try {
                     },
                     filter: ["==", "$type", "Point"],
                 });
+
+                if (portageTooltips) {
+                    const tooltip = new maplibregl.Popup({
+                        closeButton: false,
+                        closeOnClick: false,
+                        offset: 12,
+                        className: "portage-tooltip",
+                    });
+
+                    map.on("mousemove", "canoe", (e) => {
+                        if (!e.features || e.features.length === 0) return;
+                        const feature = e.features[0];
+                        if (feature.properties?.canoe !== "portage") return;
+
+                        const length = feature.properties?.length;
+                        if (length == null) return;
+
+                        const meters = Math.round(length);
+                        map.getCanvas().style.cursor = "crosshair";
+                        tooltip
+                            .setLngLat(e.lngLat)
+                            .setHTML(`<span>${meters}m portage</span>`)
+                            .addTo(map);
+                    });
+
+                    map.on("mouseleave", "canoe", () => {
+                        map.getCanvas().style.cursor = "";
+                        tooltip.remove();
+                    });
+                }
 
                 if (interactiveProp) {
                     const layers = ["canoe", "campsites"];
