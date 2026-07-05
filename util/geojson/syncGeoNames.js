@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 // Setup paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(__dirname, '../..');
 
 const contentDir = path.join(projectRoot, 'src', 'content');
 const geoDir = path.join(projectRoot, 'public', 'geo');
@@ -22,6 +22,10 @@ async function getMdFiles(dir) {
     return Array.prototype.concat(...files).filter(f => f.endsWith('.md'));
 }
 
+/**
+ * Syncs the geojson file names with the .md file names in the content directory to the public/geo directory.
+ * Also updates the .md front matter to point to the new geojson file name.
+ */
 async function syncGeoFiles() {
     console.log("Starting GeoJSON sync process...");
 

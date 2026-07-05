@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // Define paths relative to the script's location
 // Go up one level from 'util' to the project root 'canoe-blog'
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(__dirname, '../..');
 const inputDir = path.join(projectRoot, 'public', 'geo');
 const outputFilePath = path.join(inputDir, 'all.geo.json');
 
@@ -128,6 +128,8 @@ async function combineGeoJSON() {
                     if (geojson.geometry && (geojson.geometry.type === 'LineString' || geojson.geometry.type === 'MultiLineString')) {
                         geojson.properties = geojson.properties || {};
                         geojson.properties.slug = slug;
+                        delete geojson.properties.featureGroup;
+                        delete geojson.properties.source;                      
                         allFeatures.push(simplifyFeature(geojson));
                     }
                 } else {

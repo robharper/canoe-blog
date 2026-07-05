@@ -24,7 +24,7 @@ function combineJsonFiles(directory, outputFile) {
   console.log(`Combined JSON files into ${outputFile}`);
 }
 
-const directoryPath = './'; // Replace with your directory path
+const directoryPath = '../../../public/geo/'; // Replace with your directory path
 const outputFileName = 'combined.geo.json';
 
 combineJsonFiles(directoryPath, outputFileName);
