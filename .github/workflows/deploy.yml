@@ -21,7 +21,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: util/.nvmrc
           cache: npm
       - run: npm ci
       - run: npm run build
