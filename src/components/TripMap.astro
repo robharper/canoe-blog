@@ -86,6 +86,49 @@ try {
 <script>
     import maplibregl from "maplibre-gl";
 
+    function adjustHexColor(hex: string, amount: number): string {
+        const num = parseInt(hex.slice(1), 16);
+        const r = (num >> 16) & 255;
+        const g = (num >> 8) & 255;
+        const b = num & 255;
+
+        const adjust = (channel: number) => {
+            if (amount > 0) {
+                return Math.min(255, Math.round(channel + (255 - channel) * amount));
+            }
+            return Math.max(0, Math.round(channel * (1 + amount)));
+        };
+
+        const toHex = (channel: number) => channel.toString(16).padStart(2, "0");
+        return `#${toHex(adjust(r))}${toHex(adjust(g))}${toHex(adjust(b))}`;
+    }
+
+    const COLORS = {
+        portage: {
+            base: "#b11d1b",
+            dark: adjustHexColor("#b11d1b", -0.25),
+            light: adjustHexColor("#b11d1b", 0.45),
+        },
+        water: {
+            base: "#2584cb",
+            dark: adjustHexColor("#2584cb", -0.25),
+            light: adjustHexColor("#2584cb", 0.45),
+        },
+        campsite: {
+            base: "#3ea34b",
+            dark: adjustHexColor("#3ea34b", -0.25),
+            light: adjustHexColor("#3ea34b", 0.45),
+        },
+    };
+
+    const baseLineColor = [
+        "match",
+        ["get", "canoe"],
+        "portage",
+        COLORS.portage.base,
+        COLORS.water.base,
+    ] as maplibregl.ExpressionSpecification;
+
     const mapContainer = document.getElementById("map");
     const resetButton = document.getElementById("reset-map");
     const geojsonUrl = mapContainer?.dataset.geojson;
@@ -155,13 +198,7 @@ try {
                             3,
                             5,
                         ],
-                        "line-color": [
-                            "match",
-                            ["get", "canoe"],
-                            "portage",
-                            "#b11d1b",
-                            "#2584cb",
-                        ],
+                        "line-color": baseLineColor,
                     },
                     filter: ["==", "$type", "LineString"],
                 });
@@ -189,7 +226,7 @@ try {
                         "text-size": 14,
                     },
                     paint: {
-                        "icon-color": "#3ea34b",
+                        "icon-color": COLORS.campsite.base,
                         "icon-halo-color": "black",
                         "icon-halo-width": 1,
                         "text-color": "#18181b", // zinc-900
@@ -208,17 +245,29 @@ try {
                                 const val = e.features[0].properties[interactiveProp];
                                 if (val) {
                                     map.getCanvas().style.cursor = "pointer";
-                                    map.setPaintProperty("canoe", "line-opacity", [
+                                    map.setPaintProperty("canoe", "line-color", [
                                         "case",
                                         ["==", ["get", interactiveProp], val],
-                                        1,
-                                        0.3,
+                                        [
+                                            "match",
+                                            ["get", "canoe"],
+                                            "portage",
+                                            COLORS.portage.dark,
+                                            COLORS.water.dark,
+                                        ],
+                                        [
+                                            "match",
+                                            ["get", "canoe"],
+                                            "portage",
+                                            COLORS.portage.light,
+                                            COLORS.water.light,
+                                        ],
                                     ]);
-                                    map.setPaintProperty("campsites", "icon-opacity", [
+                                    map.setPaintProperty("campsites", "icon-color", [
                                         "case",
                                         ["==", ["get", interactiveProp], val],
-                                        1,
-                                        0.3,
+                                        COLORS.campsite.dark,
+                                        COLORS.campsite.light,
                                     ]);
                                 }
                             }
@@ -226,8 +275,12 @@ try {
 
                         map.on("mouseleave", layerId, () => {
                             map.getCanvas().style.cursor = "";
-                            map.setPaintProperty("canoe", "line-opacity", 1);
-                            map.setPaintProperty("campsites", "icon-opacity", 1);
+                            map.setPaintProperty("canoe", "line-color", baseLineColor);
+                            map.setPaintProperty(
+                                "campsites",
+                                "icon-color",
+                                COLORS.campsite.base,
+                            );
                         });
 
                         map.on("click", layerId, (e) => {
