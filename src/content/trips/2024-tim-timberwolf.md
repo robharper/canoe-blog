@@ -5,6 +5,11 @@ location: "Magnetawan Access"
 excerpt: "A placeholder description for the trip to Tim Timberwolf."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
 geojson: "/geo/2024-tim-timberwolf.geo.json"
+waypointNames:
+  start: "Magnetawan"
+  campsites:
+    1: "Queer Like"
+    2: "Timberwolf Lake"
+    3: "Sawyer Lake"
 ---
 
-A placeholder trip description for Tim Timberwolf.

@@ -29,7 +29,11 @@ if (trip.data.geojson) {
         
         if (file) {
             const geojsonContent = file.default || file;
-            dailyStats = calculateDailyTripStats(geojsonContent, trip.data.title) as DayStats[] | null;
+            dailyStats = calculateDailyTripStats(
+                geojsonContent,
+                trip.data.title,
+                trip.data.waypointNames,
+            ) as DayStats[] | null;
             stats = calculateTripStats(geojsonContent, dailyStats) as TripStats;
         } else {
             console.warn(`GeoJSON file not found: ${key}`);
@@ -81,7 +85,7 @@ if (stats && trip.data.outAndBack) {
             <Image
                 src={trip.data.coverImage}
                 alt={trip.data.title}
-                class="w-full aspect-[2] object-cover"
+                class="w-full aspect-[2] object-cover [@media(max-width:767px)_and_(orientation:portrait)]:aspect-[1]"
                 width={1920}
                 quality="high"
             />
@@ -131,7 +135,7 @@ if (stats && trip.data.outAndBack) {
         class="max-w-4xl mx-auto px-4 md:px-8 mt-16 pt-8 border-t border-zinc-200 text-center"
     >
         <a
-            href="/"
+            href={import.meta.env.BASE_URL}
             class="inline-flex items-center gap-2 text-river-700 hover:text-river-900 font-medium transition-colors"
         >
             ← Back to All Trips

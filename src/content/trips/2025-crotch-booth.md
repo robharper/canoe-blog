@@ -9,4 +9,3 @@ outAndBack: true
 portageCount: 3
 ---
 
-A placeholder trip description for Crotch Booth.

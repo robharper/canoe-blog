@@ -8,4 +8,3 @@ geojson: "/geo/2026-smoke-porc-louisa-head.geo.json"
 portageCount: 10
 ---
 
-A placeholder trip description for Tom Thompson.

@@ -6,7 +6,5 @@ excerpt: "A placeholder description for the trip to Tom Thompson."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
 geojson: "/geo/2020-tom-thompson.geo.json"
 outAndBack: true
-portageCount: 2
 ---
 
-A placeholder trip description for Tom Thompson.

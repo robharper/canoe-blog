@@ -9,6 +9,9 @@ interface Props {
 
 const { geojson, center, interactive = null } = Astro.props;
 
+const geojsonPath = geojson.startsWith("/") ? geojson.slice(1) : geojson;
+const geojsonUrl = `${import.meta.env.BASE_URL}${geojsonPath}`;
+
 // Server-side bounds calculation
 let serverBounds = null;
 try {
@@ -63,11 +66,11 @@ try {
 }
 ---
 
-<div class="relative group/map">
+<div class="relative group/map w-screen ml-[calc(50%-50vw)] md:ml-0 md:w-full">
     <div
         id="map"
-        class="w-full aspect-video rounded-lg shadow-md border border-zinc-200"
-        data-geojson={geojson}
+        class="w-full aspect-[8/9] md:aspect-video rounded-none md:rounded-lg shadow-none md:shadow-md border-y md:border border-zinc-200"
+        data-geojson={geojsonUrl}
         data-center={JSON.stringify(center)}
         data-bounds={JSON.stringify(serverBounds)}
         data-interactive={interactive}
@@ -216,7 +219,12 @@ try {
                             "circle",
                         ],
                         "icon-size": 1.5,
-                        "text-field": ["get", "label"],
+                        "text-field": [
+                            "case",
+                            ["==", ["get", "tourism"], "camp_site"],
+                            ["to-string", ["get", "label"]],
+                            "",
+                        ],
                         "text-font": [
                             "Open Sans Bold",
                             "Arial Unicode MS Bold",

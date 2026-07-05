@@ -14,7 +14,7 @@ const { title } = Astro.props;
 		<meta charset="UTF-8" />
 		<meta name="description" content="A canoeing and camping journal" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title} | Canoe Blog</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,14 +30,14 @@ const { title } = Astro.props;
 		>
 			<div class="max-w-4xl mx-auto flex justify-between items-center">
 				<a
-					href="/"
+					href={import.meta.env.BASE_URL}
 					class="text-2xl font-serif font-bold text-sage-800 tracking-tight hover:text-sage-600 transition-colors"
 				>
 					Backcountry <span class="text-bark-700">Bloodletting</span>
 				</a>
 				<nav>
 					<a
-						href="/about"
+						href={`${import.meta.env.BASE_URL}about`}
 						class="text-sm font-medium text-zinc-600 hover:text-river-600 transition-colors"
 						>About</a
 					>

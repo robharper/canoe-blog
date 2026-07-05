@@ -18,6 +18,13 @@ const NODE_TOLERANCE_M = 25;
  */
 
 /**
+ * @typedef {Object} WaypointNames
+ * @property {string} [start] Display name for the put-in access point
+ * @property {string} [end] Display name for the take-out access point (one-way trips)
+ * @property {Record<number, string>} [campsites] Display names keyed by campsite night number
+ */
+
+/**
  * Builds a day-by-day breakdown of a canoe trip from its route GeoJSON.
  *
  * The route network (paddle + portage LineStrings) is modelled as a graph so
@@ -38,9 +45,11 @@ const NODE_TOLERANCE_M = 25;
  * @param {string} [context] Optional label (e.g. trip title/slug) included
  *   in console warnings to make it easier to find which trip's data needs
  *   fixing when a day's route can't be found.
+ * @param {WaypointNames} [waypointNames] Optional display names from trip
+ *   front matter for access points and campsite nights.
  * @returns {DayStats[]|null}
  */
-export function calculateDailyTripStats(geojson, context = 'trip') {
+export function calculateDailyTripStats(geojson, context = 'trip', waypointNames = {}) {
     if (!geojson?.features?.length) {
         return null;
     }
@@ -69,13 +78,15 @@ export function calculateDailyTripStats(geojson, context = 'trip') {
         return null;
     }
 
-    const startLabel = accessPoints.isLoop ? 'Access point' : 'Start';
-    const endLabel = accessPoints.isLoop ? 'Access point' : 'End';
+    const startLabel =
+        waypointNames.start ?? (accessPoints.isLoop ? 'Access point' : 'Start');
+    const endLabel =
+        waypointNames.end ?? (accessPoints.isLoop ? 'Access point' : 'End');
 
     const waypoints = [
         { label: startLabel, coordinates: accessPoints.start },
         ...campsites.map((campsite) => ({
-            label: `Campsite ${campsite.night}`,
+            label: getCampsiteLabel(campsite.night, waypointNames),
             coordinates: campsite.coordinates,
         })),
     ];
@@ -198,6 +209,11 @@ function calculateLineStringLength(coordinates) {
  * access_point features labeled "Start" and "End" (case-insensitive) treat
  * them as distinct put-in/take-out points.
  */
+function getCampsiteLabel(night, waypointNames) {
+    const name = waypointNames?.campsites?.[night];
+    return name ?? `Campsite ${night}`;
+}
+
 function findAccessPoints(geojson) {
     const features = geojson.features.filter(
         (entry) =>

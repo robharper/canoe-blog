@@ -8,4 +8,3 @@ geojson: "/geo/2024-cauchon.geo.json"
 portageCount: 5
 ---
 
-A placeholder trip description for Cauchon Lake.

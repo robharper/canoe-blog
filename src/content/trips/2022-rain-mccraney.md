@@ -8,4 +8,3 @@ geojson: "/geo/2022-rain-mccraney.geo.json"
 portageCount: 6
 ---
 
-A placeholder trip description for Rain Mcrainy.

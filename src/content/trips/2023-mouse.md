@@ -5,7 +5,5 @@ location: "Kiosk Access"
 excerpt: "A placeholder description for the trip to Mouse Lake."
 coverImage: "../../assets/images/trips/algonquin-2023/cover.png"
 geojson: "/geo/2023-mouse.geo.json"
-portageCount: 9
 ---
 
-A placeholder trip description for Mouse Lake.

@@ -40,14 +40,14 @@ const geojson = allGeojsonFile?.default || allGeojsonFile;
 	</div>
 </BaseLayout>
 
-<script>
+<script define:vars={{ baseUrl: import.meta.env.BASE_URL }}>
 	import { navigate } from "astro:transitions/client";
 
 	const mapElement = document.getElementById("map");
 	if (mapElement) {
-		(mapElement as any).onMapClick = (slug: string) => {
+		mapElement.onMapClick = (slug) => {
 			if (slug) {
-				navigate(`/trips/${slug}`);
+				navigate(`${baseUrl}trips/${slug}`);
 			}
 		};
 	}

@@ -15,6 +15,11 @@ const tripsCollection = defineCollection({
 		mapCenter: z.array(z.number()).length(2).optional(),
 		portageCount: z.number().optional(),
 		outAndBack: z.boolean().optional().default(false),
+		waypointNames: z.object({
+			start: z.string().optional(),
+			end: z.string().optional(),
+			campsites: z.record(z.coerce.number(), z.string()).optional(),
+		}).optional(),
 	}),
 });
 
