@@ -1,5 +1,5 @@
 {"type":"FeatureCollection", "features": [
-{"type": "Feature","properties": {},"geometry": {"coordinates": [-78.98674523861749,45.66807922596291],"type": "Point"}},
+{"type": "Feature","properties": {"tourism": "access_point"},"geometry": {"coordinates": [-78.98674523861749,45.66807922596291],"type": "Point"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[-78.8790736,45.7117826]},"properties":{"tourism":"camp_site","id":"node/6859081889", "label": "2"},"id":"node/6859081889"},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[-78.9334618,45.6950658]},"properties":{"tourism":"camp_site","id":"node/6859082003", "label": "3"},"id":"node/6859082003"},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[-78.9391597,45.6717284]},"properties":{"tourism":"camp_site","id":"node/6859082043", "label": "1"},"id":"node/6859082043"},

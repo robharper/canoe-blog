@@ -3,7 +3,9 @@
   "features": [
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "tourism": "access_point"
+      },
       "geometry": {
         "coordinates": [-78.41318317823861, 45.52511226246463],
         "type": "Point"

@@ -7,6 +7,10 @@ import { calculateTripStats } from "../util/geoStats";
 import TripKeyDetails, {
     type TripStats,
 } from "../components/TripKeyDetails.astro";
+import TripDailyDetails, {
+    type DayStats,
+} from "../components/TripDailyDetails.astro";
+import { calculateDailyTripStats } from "../util/dailyTripStats";
 
 interface Props {
     trip: CollectionEntry<"trips">;
@@ -15,6 +19,7 @@ interface Props {
 const { trip } = Astro.props;
 
 let stats: TripStats | null = null;
+let dailyStats: DayStats[] | null = null;
 if (trip.data.geojson) {
     try {
         const geojsonFiles = import.meta.glob('/public/geo/*.json', { eager: true }) as Record<string, any>;
@@ -24,7 +29,8 @@ if (trip.data.geojson) {
         
         if (file) {
             const geojsonContent = file.default || file;
-            stats = calculateTripStats(geojsonContent) as TripStats;
+            dailyStats = calculateDailyTripStats(geojsonContent, trip.data.title) as DayStats[] | null;
+            stats = calculateTripStats(geojsonContent, dailyStats) as TripStats;
         } else {
             console.warn(`GeoJSON file not found: ${key}`);
         }
@@ -87,7 +93,7 @@ if (stats && trip.data.outAndBack) {
         <!-- Map Section (if available) -->
         {
             (trip.data.geojson || trip.data.mapImage) && (
-                <div class="max-w-4xl mx-auto px-4 md:px-8">
+                <div class="max-w-4xl mx-auto px-4 mb-12 md:px-8">
                     <div class="prose mx-auto">
                         <h2>Route Map</h2>
 
@@ -107,6 +113,12 @@ if (stats && trip.data.outAndBack) {
                 </div>
             )
         }
+
+        <!-- Daily Breakdown Section -->
+        {dailyStats && dailyStats.length > 0 && (
+            <TripDailyDetails days={dailyStats} />
+        )}
+
 
         <!-- Content -->
         <div class="prose prose-zinc mx-auto my-16 text-zinc-900 px-4 md:px-0">

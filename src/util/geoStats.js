@@ -1,19 +1,26 @@
+import { calculateDailyTripStats } from './dailyTripStats.js';
+
 /**
  * Calculates trip statistics from GeoJSON features.
- * 
+ *
+ * Prefers summing up the day-by-day breakdown from calculateDailyTripStats
+ * so the totals shown here always agree with the daily breakdown table.
+ * Falls back to summing every mapped route segment directly when a daily
+ * breakdown isn't available (e.g. missing/incomplete access point or
+ * campsite tags).
+ *
  * @param {Object} geojson - The GeoJSON object.
+ * @param {import('./dailyTripStats.js').DayStats[]|null} [dailyStats] -
+ *   Pre-computed daily breakdown (e.g. from calculateDailyTripStats). If
+ *   omitted, it's computed here; pass it in when the caller already has it
+ *   to avoid running the calculation twice.
  * @returns {Object} - An object containing:
  *   - portageCount: Total number of portages.
  *   - portageLengthKm: Total length of portages in km.
  *   - paddleLengthKm: Total paddling length in km.
  *   - nights: Number of nights (based on campsites).
  */
-export function calculateTripStats(geojson) {
-    let portageCount = 0;
-    let portageLengthM = 0;
-    let paddleLengthM = 0;
-    let campsites = 0;
-
+export function calculateTripStats(geojson, dailyStats) {
     if (!geojson || !geojson.features) {
         return {
             portageCount: 0,
@@ -23,38 +30,71 @@ export function calculateTripStats(geojson) {
         };
     }
 
-    geojson.features.forEach((feature) => {
-        const props = feature.properties || {};
+    const nights = geojson.features.filter(
+        (feature) => feature.properties?.tourism === 'camp_site',
+    ).length;
 
-        // Count campsites
-        if (props.tourism === 'camp_site') {
-            campsites++;
+    const resolvedDailyStats = dailyStats === undefined ? calculateDailyTripStats(geojson) : dailyStats;
+    if (resolvedDailyStats && resolvedDailyStats.length > 0) {
+        const totals = resolvedDailyStats.reduce(
+            (sum, day) => ({
+                paddleLengthKm: sum.paddleLengthKm + day.paddleLengthKm,
+                portageLengthKm: sum.portageLengthKm + day.portageLengthKm,
+                portageCount: sum.portageCount + day.portageCount,
+            }),
+            { paddleLengthKm: 0, portageLengthKm: 0, portageCount: 0 },
+        );
+
+        return {
+            portageCount: totals.portageCount,
+            portageLengthKm: roundToOneDecimal(totals.portageLengthKm),
+            paddleLengthKm: roundToOneDecimal(totals.paddleLengthKm),
+            nights,
+        };
+    }
+
+    return calculateTripStatsFromSegments(geojson, nights);
+}
+
+/**
+ * Sums every mapped route segment directly, regardless of whether it
+ * belongs to a day's actual path. Used when the route network doesn't have
+ * enough data (access point/campsite tags) to build a day-by-day breakdown.
+ */
+function calculateTripStatsFromSegments(geojson, nights) {
+    let portageCount = 0;
+    let portageLengthM = 0;
+    let paddleLengthM = 0;
+
+    geojson.features.forEach((feature) => {
+        if (feature.geometry?.type !== 'LineString') {
+            return;
         }
 
-        // Process LineString features for lengths
-        if (feature.geometry && feature.geometry.type === 'LineString') {
-            let length = props.length;
+        const length = calculateLineStringLength(feature.geometry.coordinates);
 
-            // Calculate length if missing
-            if (length === undefined || length === null) {
-                length = calculateLineStringLength(feature.geometry.coordinates);
-            }
-
-            if (props.canoe === 'portage') {
-                portageCount++;
-                portageLengthM += length;
-            } else if (props.canoe === 'yes') {
-                paddleLengthM += length;
-            }
+        // Every non-portage LineString is a paddling segment. Route data
+        // pulled in from other sources (rivers, streams, etc.) won't always
+        // carry an explicit canoe=yes tag the way hand-drawn segments do, so
+        // only an explicit canoe=portage tag is treated as a portage.
+        if (feature.properties?.canoe === 'portage') {
+            portageCount++;
+            portageLengthM += length;
+        } else {
+            paddleLengthM += length;
         }
     });
 
     return {
         portageCount,
-        portageLengthKm: Math.round((portageLengthM / 1000) * 10) / 10,
-        paddleLengthKm: Math.round((paddleLengthM / 1000) * 10) / 10,
-        nights: campsites > 0 ? campsites : 0,
+        portageLengthKm: roundToOneDecimal(portageLengthM / 1000),
+        paddleLengthKm: roundToOneDecimal(paddleLengthM / 1000),
+        nights,
     };
+}
+
+function roundToOneDecimal(value) {
+    return Math.round(value * 10) / 10;
 }
 
 /**
@@ -76,7 +116,7 @@ function calculateLineStringLength(coordinates) {
  * @param {Array} p2 - [lng, lat]
  * @returns {number} - Distance in meters.
  */
-function haversineDistance(p1, p2) {
+export function haversineDistance(p1, p2) {
     const R = 6371e3; // Earth's radius in meters
     const phi1 = (p1[1] * Math.PI) / 180;
     const phi2 = (p2[1] * Math.PI) / 180;
