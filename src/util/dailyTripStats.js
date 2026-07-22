@@ -102,6 +102,13 @@ export function calculateDailyTripStats(geojson, context = 'trip', waypointNames
     const accessNodeIds =
         startNodeId === endNodeId ? [startNodeId] : [startNodeId, endNodeId];
 
+    // Order matters: bridge genuinely disconnected pieces of the network
+    // together first, at their cheapest real connection points, before
+    // adding the access-point shortcuts below. Doing it in the other order
+    // would let a long "dangling end -> access" shortcut prematurely union
+    // two components, masking a much shorter bridge between them that the
+    // MST pass would otherwise have found.
+    connectDisconnectedComponents(graph, context);
     connectDanglingEndsToAccess(graph, {
         startNodeId,
         endNodeId,
@@ -273,9 +280,35 @@ function extractRouteSegments(geojson) {
     return geojson.features
         .filter((feature) => feature.geometry?.type === 'LineString')
         .map((feature) => ({
-            coordinates: feature.geometry.coordinates,
+            coordinates: collapseOutAndBackTrail(feature.geometry.coordinates),
             canoe: feature.properties?.canoe === 'portage' ? 'portage' : 'yes',
         }));
+}
+
+/**
+ * Some portage trails are mapped as a GPS "there and back" track: walk out
+ * to the far end, then retrace the exact same points back to the start.
+ * As a single LineString this starts and ends at the same coordinate, so
+ * it collapses to a zero-length loop in the route graph and the trail
+ * (and the connection it makes to whatever is at its far end) is lost
+ * entirely. Detect the mirror-image pattern around the track's middle
+ * point and keep just the outbound half, so the trail's true one-way
+ * length and destination are preserved.
+ */
+function collapseOutAndBackTrail(coordinates) {
+    const pointCount = coordinates.length;
+    if (pointCount < 5 || pointCount % 2 === 0) {
+        return coordinates;
+    }
+
+    const middleIndex = (pointCount - 1) / 2;
+    for (let i = 0; i < middleIndex; i++) {
+        if (haversineDistance(coordinates[i], coordinates[pointCount - 1 - i]) > NODE_TOLERANCE_M) {
+            return coordinates;
+        }
+    }
+
+    return coordinates.slice(0, middleIndex + 1);
 }
 
 /**
@@ -294,16 +327,13 @@ function buildRouteGraph(segments, waypoints) {
     });
 
     const nodeCoordinates = [];
-    const nodeTouchCount = [];
     function getNodeId(coordinates) {
         for (let i = 0; i < nodeCoordinates.length; i++) {
             if (haversineDistance(nodeCoordinates[i], coordinates) <= NODE_TOLERANCE_M) {
-                nodeTouchCount[i] += 1;
                 return i;
             }
         }
         nodeCoordinates.push(coordinates);
-        nodeTouchCount.push(1);
         return nodeCoordinates.length - 1;
     }
 
@@ -311,13 +341,6 @@ function buildRouteGraph(segments, waypoints) {
         segment.startNode = getNodeId(segment.coordinates[0]);
         segment.endNode = getNodeId(segment.coordinates.at(-1));
     });
-
-    const danglingNodeIds = nodeTouchCount.reduce((ids, count, id) => {
-        if (count === 1) {
-            ids.push(id);
-        }
-        return ids;
-    }, []);
 
     const insertions = waypoints.map((waypoint) =>
         findClosestPointOnRoute(waypoint.coordinates, preparedSegments),
@@ -371,7 +394,7 @@ function buildRouteGraph(segments, waypoints) {
         }
     });
 
-    return { edges, waypointNodeId, danglingNodeIds, nodeCoordinates };
+    return { edges, waypointNodeId, nodeCoordinates };
 }
 
 function computeCumulativeDistances(coordinates) {
@@ -427,22 +450,35 @@ function projectPointOnSegment(point, start, end) {
     return { point: [start[0] + dx * t, start[1] + dy * t], t };
 }
 
+function computeNodeDegrees(graph) {
+    const degree = new Array(graph.nodeCoordinates.length).fill(0);
+    graph.edges.forEach((edge) => {
+        degree[edge.from] += 1;
+        degree[edge.to] += 1;
+    });
+    return degree;
+}
+
 /**
  * Some routes only reach an access point via an unmapped stretch of open
- * water (e.g. paddling across the launch lake). Any dead end left in the
- * network is assumed to connect back to whichever access point is closer,
- * which is what lets a route's outbound and inbound legs share the same
- * "spur" and lets loops close properly.
+ * water (e.g. paddling across the launch lake, or the last bit of a spur
+ * that wasn't drawn all the way to the put-in). Any dead end left in the
+ * network - even one that's already reachable from access via a long way
+ * around the rest of the network - is given a direct, straight-line edge
+ * back to whichever access point is closer. This is what lets a route's
+ * outbound and inbound legs share the same "spur" and lets loops close
+ * properly; Dijkstra will only ever use it when it's actually the shortest
+ * option, so it's harmless to add even when a shorter path already exists.
  */
 function connectDanglingEndsToAccess(graph, access) {
     const { startNodeId, endNodeId, startCoordinates, endCoordinates } = access;
+    const degree = computeNodeDegrees(graph);
 
-    graph.danglingNodeIds.forEach((nodeId) => {
-        if (nodeId === startNodeId || nodeId === endNodeId) {
+    graph.nodeCoordinates.forEach((coordinates, nodeId) => {
+        if (degree[nodeId] !== 1 || nodeId === startNodeId || nodeId === endNodeId) {
             return;
         }
 
-        const coordinates = graph.nodeCoordinates[nodeId];
         const distanceToStart = haversineDistance(startCoordinates, coordinates);
         const distanceToEnd = haversineDistance(endCoordinates, coordinates);
         const useStart = distanceToStart <= distanceToEnd;
@@ -453,6 +489,100 @@ function connectDanglingEndsToAccess(graph, access) {
             length: useStart ? distanceToStart : distanceToEnd,
             canoe: 'yes',
         });
+    });
+}
+
+// Above this distance, a bridge between two disconnected pieces of the
+// route network is unlikely to represent a real, paddleable gap (e.g. a
+// short unmapped crossing of the launch lake) and more likely means a
+// LineString is missing from the source data entirely. We still add the
+// bridge (so the trip can compute at all / the plausibility check can
+// reject it with a useful reason) but log it so it can be tracked down.
+const SUSPICIOUS_BRIDGE_DISTANCE_M = 300;
+
+/**
+ * The mapped route network is often split into several disconnected pieces:
+ * a paddle across the launch lake that wasn't drawn as its own line, a
+ * campsite's little bay that's a separate LineString from the main lake, an
+ * out-and-back spur that should close back on the access point, etc.
+ *
+ * Rather than only bridging dead ends back to the trip's access point(s),
+ * this finds every disconnected piece of the network and joins them
+ * together with the shortest possible set of bridges - a minimum spanning
+ * tree over every node in the graph - so a campsite stranded on its own
+ * little island of LineStrings (which may itself be a small closed loop
+ * with no degree-1 "dead end" of its own, e.g. a duplicated or looping
+ * portage trail) connects at its nearest real gap, possibly via one or more
+ * other stranded islands, instead of being routed all the way back to
+ * access as one long straight-line "shortcut".
+ */
+function connectDisconnectedComponents(graph, context) {
+    const parent = new Map();
+    function find(id) {
+        let root = id;
+        while (parent.has(root) && parent.get(root) !== root) {
+            root = parent.get(root);
+        }
+        parent.set(id, root);
+        return root;
+    }
+    function union(a, b) {
+        const rootA = find(a);
+        const rootB = find(b);
+        if (rootA === rootB) {
+            return false;
+        }
+        parent.set(rootA, rootB);
+        return true;
+    }
+
+    graph.nodeCoordinates.forEach((_, id) => {
+        if (!parent.has(id)) {
+            parent.set(id, id);
+        }
+    });
+    graph.edges.forEach((edge) => union(edge.from, edge.to));
+
+    // Every node is a candidate bridge endpoint. A stranded island can be a
+    // small loop where every node already has degree >= 2 within its own
+    // island, so restricting candidates to degree-1 "dead ends" would miss
+    // it entirely; considering all nodes (and only ever bridging pairs that
+    // aren't already in the same component) reliably finds the true
+    // nearest gap between any two disconnected pieces.
+    const candidates = graph.nodeCoordinates.map((_, id) => id);
+
+    const candidatePairs = [];
+    for (let i = 0; i < candidates.length; i++) {
+        for (let j = i + 1; j < candidates.length; j++) {
+            const a = candidates[i];
+            const b = candidates[j];
+            if (find(a) === find(b)) {
+                continue;
+            }
+            candidatePairs.push({
+                a,
+                b,
+                distance: haversineDistance(graph.nodeCoordinates[a], graph.nodeCoordinates[b]),
+            });
+        }
+    }
+    candidatePairs.sort((pairA, pairB) => pairA.distance - pairB.distance);
+
+    candidatePairs.forEach(({ a, b, distance }) => {
+        if (!union(a, b)) {
+            return;
+        }
+
+        graph.edges.push({ from: a, to: b, length: distance, canoe: 'yes' });
+
+        if (distance > SUSPICIOUS_BRIDGE_DISTANCE_M) {
+            console.warn(
+                `[dailyTripStats] ${context}: bridged a ${(distance / 1000).toFixed(1)}km gap between ` +
+                    `[${graph.nodeCoordinates[a]}] and [${graph.nodeCoordinates[b]}] to keep the route ` +
+                    `network connected. This likely means a LineString is missing from the GeoJSON ` +
+                    `between these two points.`,
+            );
+        }
     });
 }
 
