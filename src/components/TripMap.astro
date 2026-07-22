@@ -12,6 +12,7 @@ const { geojson, center, interactive = null, showPortageTooltips = false } = Ast
 
 const geojsonPath = geojson.startsWith("/") ? geojson.slice(1) : geojson;
 const geojsonUrl = `${import.meta.env.BASE_URL}${geojsonPath}`;
+const lakesUrl = `${import.meta.env.BASE_URL}geo/algonquin-lakes.geo.json`;
 const interactiveHref = interactive
     ? `${import.meta.env.BASE_URL}trips/`
     : null;
@@ -75,6 +76,7 @@ try {
         id="map"
         class="w-full aspect-[8/9] md:aspect-video rounded-none md:rounded-lg shadow-none md:shadow-md border-y md:border border-zinc-200"
         data-geojson={geojsonUrl}
+        data-lakes={lakesUrl}
         data-center={JSON.stringify(center)}
         data-bounds={JSON.stringify(serverBounds)}
         data-interactive={interactive}
@@ -160,6 +162,7 @@ try {
     const mapContainer = document.getElementById("map");
     const resetButton = document.getElementById("reset-map");
     const geojsonUrl = mapContainer?.dataset.geojson;
+    const lakesUrl = mapContainer?.dataset.lakes;
     const centerData = mapContainer?.dataset.center;
     const boundsData = mapContainer?.dataset.bounds;
     const interactiveProp = mapContainer?.dataset.interactive;
@@ -204,8 +207,84 @@ try {
 
         map.on("load", async () => {
             try {
-                const response = await fetch(geojsonUrl);
-                const data = await response.json();
+                for (const layerId of ["Lake labels", "Lakeline labels"]) {
+                    if (map.getLayer(layerId)) {
+                        map.setLayoutProperty(layerId, "visibility", "none");
+                    }
+                }
+
+                const lakesPromise = lakesUrl
+                    ? fetch(lakesUrl).then((r) => r.json())
+                    : Promise.resolve(null);
+                const [data, lakesData] = await Promise.all([
+                    fetch(geojsonUrl).then((r) => r.json()),
+                    lakesPromise,
+                ]);
+
+                if (lakesData) {
+                    map.addSource("lake-names", {
+                        type: "geojson",
+                        data: lakesData,
+                    });
+
+                    const lakeLabelLayout = {
+                        "text-field": ["get", "name"],
+                        "text-font": ["Roboto Italic", "Noto Sans Italic"],
+                        "text-size": [
+                            "interpolate",
+                            ["linear"],
+                            ["zoom"],
+                            8,
+                            10,
+                            14,
+                            13,
+                        ],
+                        "text-max-width": 6,
+                        "text-padding": 2,
+                        "text-letter-spacing": 0.05,
+                        "symbol-sort-key": ["-", ["get", "area"]],
+                        "text-allow-overlap": false,
+                        "text-optional": true,
+                    };
+                    const lakeLabelPaint = {
+                        "text-color": "#1e3a5f",
+                        "text-halo-color": "rgba(255,255,255,0.85)",
+                        "text-halo-width": 1.5,
+                    };
+
+                    // Large ≥2km² from z8; medium ≥0.3km² from z10; rest from z12
+                    map.addLayer({
+                        id: "lake-names-large",
+                        type: "symbol",
+                        source: "lake-names",
+                        minzoom: 8,
+                        filter: [">=", ["get", "area"], 2_000_000],
+                        layout: lakeLabelLayout,
+                        paint: lakeLabelPaint,
+                    });
+                    map.addLayer({
+                        id: "lake-names-medium",
+                        type: "symbol",
+                        source: "lake-names",
+                        minzoom: 10,
+                        filter: [
+                            "all",
+                            [">=", ["get", "area"], 300_000],
+                            ["<", ["get", "area"], 2_000_000],
+                        ],
+                        layout: lakeLabelLayout,
+                        paint: lakeLabelPaint,
+                    });
+                    map.addLayer({
+                        id: "lake-names-small",
+                        type: "symbol",
+                        source: "lake-names",
+                        minzoom: 12,
+                        filter: ["<", ["get", "area"], 300_000],
+                        layout: lakeLabelLayout,
+                        paint: lakeLabelPaint,
+                    });
+                }
 
                 map.addSource("canoe-data", {
                     type: "geojson",

@@ -1,0 +1,8 @@
+{
+  "name": "canoe-blog-basemap",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "polylabel": "^2.0.1"
+  }
+}
