@@ -3,55 +3,20 @@ import BaseLayout from "./BaseLayout.astro";
 import TripMap from "../components/TripMap.astro";
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
-import { calculateTripStats } from "../util/geoStats";
 import TripKeyDetails, {
     type TripStats,
 } from "../components/TripKeyDetails.astro";
 import TripDailyDetails, {
     type DayStats,
 } from "../components/TripDailyDetails.astro";
-import { calculateDailyTripStats } from "../util/dailyTripStats";
 
 interface Props {
     trip: CollectionEntry<"trips">;
+    stats?: TripStats | null;
+    dailyStats?: DayStats[] | null;
 }
 
-const { trip } = Astro.props;
-
-let stats: TripStats | null = null;
-let dailyStats: DayStats[] | null = null;
-if (trip.data.geojson) {
-    try {
-        const geojsonFiles = import.meta.glob('/public/geo/*.json', { eager: true }) as Record<string, any>;
-        const normalizedPath = trip.data.geojson.startsWith('/') ? trip.data.geojson : `/${trip.data.geojson}`;
-        const key = `/public${normalizedPath}`;
-        const file = geojsonFiles[key];
-        
-        if (file) {
-            const geojsonContent = file.default || file;
-            dailyStats = calculateDailyTripStats(
-                geojsonContent,
-                trip.data.title,
-                trip.data.waypointNames,
-            ) as DayStats[] | null;
-            stats = calculateTripStats(geojsonContent, dailyStats) as TripStats;
-        } else {
-            console.warn(`GeoJSON file not found: ${key}`);
-        }
-    } catch (e) {
-        console.error(`Error calculating stats for ${trip.data.title}:`, e);
-    }
-}
-
-// Manual overrides
-if (stats && trip.data.portageCount !== undefined) {
-    stats.portageCount = trip.data.portageCount;
-}
-
-if (stats && trip.data.outAndBack) {
-    stats.paddleLengthKm = Math.round(stats.paddleLengthKm * 2 * 10) / 10;
-    stats.portageLengthKm = Math.round(stats.portageLengthKm * 2 * 10) / 10;
-}
+const { trip, stats = null, dailyStats = null } = Astro.props;
 ---
 
 <BaseLayout title={trip.data.title}>
@@ -115,8 +80,9 @@ if (stats && trip.data.outAndBack) {
             )
         }
 
-        <!-- Daily Breakdown Section -->
-        {dailyStats && dailyStats.length > 0 && (
+        <!-- Daily Breakdown Section (skipped when the trip's content renders
+             each day's details inline instead, via inlineDailyDetails) -->
+        {!trip.data.inlineDailyDetails && dailyStats && dailyStats.length > 0 && (
             <TripDailyDetails days={dailyStats} />
         )}
 

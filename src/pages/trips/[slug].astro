@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import TripLayout from "../../layouts/TripLayout.astro";
+import { computeTripPageStats } from "../../util/tripPageStats.js";
 
 export async function getStaticPaths() {
     const trips = await getCollection("trips");
@@ -12,8 +13,9 @@ export async function getStaticPaths() {
 
 const { trip } = Astro.props;
 const { Content } = await render(trip);
+const { stats, dailyStats } = computeTripPageStats(trip);
 ---
 
-<TripLayout trip={trip}>
-    <Content />
+<TripLayout trip={trip} stats={stats} dailyStats={dailyStats}>
+    <Content dailyStats={dailyStats} />
 </TripLayout>
