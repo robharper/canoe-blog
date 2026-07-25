@@ -4,7 +4,7 @@ import { calculateDailyTripStats } from './dailyTripStats.js';
 /**
  * Loads a trip's GeoJSON (if any) and computes its overall stats and
  * day-by-day breakdown, applying any manual frontmatter overrides
- * (portageCount, outAndBack).
+ * (portageCount).
  *
  * Computed once per trip page so the same values can be handed both to
  * `TripLayout` (for the key details / automatic daily breakdown) and to the
@@ -48,11 +48,6 @@ export function computeTripPageStats(trip) {
     // Manual overrides
     if (stats && trip.data.portageCount !== undefined) {
         stats.portageCount = trip.data.portageCount;
-    }
-
-    if (stats && trip.data.outAndBack) {
-        stats.paddleLengthKm = Math.round(stats.paddleLengthKm * 2 * 10) / 10;
-        stats.portageLengthKm = Math.round(stats.portageLengthKm * 2 * 10) / 10;
     }
 
     return { stats, dailyStats };

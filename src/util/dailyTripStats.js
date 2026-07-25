@@ -41,6 +41,14 @@ const NODE_TOLERANCE_M = 25;
  * which case the trip runs Start -> campsites -> End instead of looping
  * back to the same point.
  *
+ * A trip with exactly one campsite is a one-night out-and-back: since the
+ * outbound and return legs are the same journey rather than independently
+ * routable days, this case is instead computed from the network's graph
+ * structure directly (see calculateOutAndBackDailyStats) rather than by
+ * shortest-pathing between waypoints. The whole mapped network is known to
+ * have been travelled (there and back), so this doesn't require - or use -
+ * an access_point feature at all.
+ *
  * @param {Object} geojson
  * @param {string} [context] Optional label (e.g. trip title/slug) included
  *   in console warnings to make it easier to find which trip's data needs
@@ -54,20 +62,11 @@ export function calculateDailyTripStats(geojson, context = 'trip', waypointNames
         return null;
     }
 
-    const accessPoints = findAccessPoints(geojson);
-    if (!accessPoints) {
-        console.warn(
-            `[dailyTripStats] ${context}: no access_point Point feature found ` +
-                `(properties.tourism must be "access_point"). Skipping daily breakdown.`,
-        );
-        return null;
-    }
-
     const campsites = findCampsites(geojson);
     if (campsites.length === 0) {
         console.warn(
-            `[dailyTripStats] ${context}: no camp_site Point features with a numeric ` +
-                `"label" property found (properties.tourism must be "camp_site"). Skipping daily breakdown.`,
+            `[dailyTripStats] ${context}: no camp_site Point features found ` +
+                `(properties.tourism must be "camp_site"). Skipping daily breakdown.`,
         );
         return null;
     }
@@ -75,6 +74,22 @@ export function calculateDailyTripStats(geojson, context = 'trip', waypointNames
     const segments = extractRouteSegments(geojson);
     if (segments.length === 0) {
         console.warn(`[dailyTripStats] ${context}: no route LineString features found. Skipping daily breakdown.`);
+        return null;
+    }
+
+    // A one-night trip's single campsite is reached and left by the same
+    // route there and back, so the whole mapped network is known to have
+    // been travelled - no access_point feature is needed to work out how.
+    if (campsites.length === 1) {
+        return calculateOutAndBackDailyStats(segments, campsites[0], context, waypointNames);
+    }
+
+    const accessPoints = findAccessPoints(geojson);
+    if (!accessPoints) {
+        console.warn(
+            `[dailyTripStats] ${context}: no access_point Point feature found ` +
+                `(properties.tourism must be "access_point"). Skipping daily breakdown.`,
+        );
         return null;
     }
 
@@ -257,12 +272,18 @@ function findAccessPoints(geojson) {
 }
 
 function findCampsites(geojson) {
-    return geojson.features
-        .filter(
-            (feature) =>
-                feature.geometry?.type === 'Point' &&
-                feature.properties?.tourism === 'camp_site',
-        )
+    const campsiteFeatures = geojson.features.filter(
+        (feature) =>
+            feature.geometry?.type === 'Point' && feature.properties?.tourism === 'camp_site',
+    );
+
+    // A "night" label only exists to order/disambiguate multiple camps; a
+    // one-night trip's single campsite doesn't need one.
+    if (campsiteFeatures.length === 1) {
+        return [{ coordinates: campsiteFeatures[0].geometry.coordinates, night: 1 }];
+    }
+
+    return campsiteFeatures
         .map((feature) => ({
             coordinates: feature.geometry.coordinates,
             night: parseInt(String(feature.properties?.label ?? ''), 10),
@@ -584,6 +605,403 @@ function connectDisconnectedComponents(graph, context) {
             );
         }
     });
+}
+
+/**
+ * Computes the two-day breakdown for a one-night out-and-back trip (a
+ * single campsite reached and left by the same route, possibly with some
+ * paddling/portage loops along the way).
+ *
+ * The whole mapped network is known to have been travelled there and
+ * back, so unlike a multi-night trip this doesn't need to know where
+ * access is, or route between waypoints at all. Every edge is first
+ * classified as a "spur" (a bridge - the only way across that part of the
+ * network, so both days paddle/portage it in full) or part of a "loop"
+ * (an alternate route exists around it). Rather than just splitting a
+ * loop's total length evenly, each loop is treated as an actual cycle:
+ * one of its two arcs (the path between the two points where it attaches
+ * to the rest of the network) is assigned to day 1, the other to day 2 -
+ * so a day's distance and portage count reflect one real path around the
+ * loop, not half of both paths blended together. The longer arc of every
+ * loop is assigned to day 1 (the outbound leg) and the shorter arc to
+ * day 2 (the return leg).
+ *
+ * A loop that isn't a simple cycle between exactly two attachment points
+ * (e.g. it has a chord, more than two spurs branching off it, or no spur
+ * at all) can't be cleanly split into "one path per day" this way; those
+ * fall back to the simpler split-the-total-in-half treatment.
+ */
+function calculateOutAndBackDailyStats(segments, campsite, context, waypointNames) {
+    // Inserting the campsite as a real graph node (rather than leaving it
+    // as an unattached coordinate) matters when the whole route is one
+    // single loop reached by a single spur: the loop only has one real
+    // attachment point in that case, but the campsite - wherever it sits
+    // on the loop - is exactly where day 1 has to end and day 2 begin, so
+    // it acts as the loop's second split point.
+    const graph = buildRouteGraph(segments, [{ label: 'campsite', coordinates: campsite.coordinates }]);
+    const campsiteNodeId = graph.waypointNodeId[0];
+    connectDisconnectedComponents(graph, context);
+
+    const isBridge = findBridgeEdges(graph.edges, graph.nodeCoordinates.length);
+    const { cleanLoops, fallbackEdgeIndices } = findLoopArcs(graph, isBridge, campsiteNodeId);
+    const edgeDay = assignLoopArcsToDays(graph, isBridge, cleanLoops, fallbackEdgeIndices);
+
+    let day1PaddleM = 0;
+    let day2PaddleM = 0;
+    let day1PortageM = 0;
+    let day2PortageM = 0;
+    graph.edges.forEach((edge, edgeIndex) => {
+        const day = edgeDay[edgeIndex];
+        const day1Length = day === 'both' || day === 'day1' ? edge.length : day === 'split' ? edge.length / 2 : 0;
+        const day2Length = day === 'both' || day === 'day2' ? edge.length : day === 'split' ? edge.length / 2 : 0;
+        if (edge.canoe === 'portage') {
+            day1PortageM += day1Length;
+            day2PortageM += day2Length;
+        } else {
+            day1PaddleM += day1Length;
+            day2PaddleM += day2Length;
+        }
+    });
+
+    let day1PortageCount = 0;
+    let day2PortageCount = 0;
+    // A portage can't be split fractionally like a length can; crossings
+    // that fall back to the even-split treatment are tallied separately so
+    // an odd number of them can be rounded (favouring day 1) once at the
+    // end, same as an individual loop-less trip would be.
+    let splitPortageCrossings = 0;
+    groupPortageSegments(graph.edges).forEach((edgeIndices) => {
+        const days = new Set(edgeIndices.map((edgeIndex) => edgeDay[edgeIndex]));
+        // A single physical portage should only ever fall in one category,
+        // but if it somehow straddles two (e.g. a mapping quirk puts part
+        // of it on each arc of a loop), fall back to the even-split
+        // treatment rather than double-counting or dropping it.
+        const day = days.size === 1 ? [...days][0] : 'split';
+
+        if (day === 'both') {
+            day1PortageCount += 1;
+            day2PortageCount += 1;
+        } else if (day === 'day1') {
+            day1PortageCount += 1;
+        } else if (day === 'day2') {
+            day2PortageCount += 1;
+        } else {
+            splitPortageCrossings += 1;
+        }
+    });
+    // Favour day 1 when the fallback total can't be split evenly.
+    day1PortageCount += Math.ceil(splitPortageCrossings / 2);
+    day2PortageCount += Math.floor(splitPortageCrossings / 2);
+
+    const startLabel = waypointNames.start ?? 'Access point';
+    const endLabel = waypointNames.end ?? 'Access point';
+    const campsiteLabel = getCampsiteLabel(campsite.night, waypointNames);
+
+    return [
+        {
+            day: 1,
+            from: startLabel,
+            to: campsiteLabel,
+            paddleLengthKm: roundKm(day1PaddleM),
+            portageLengthKm: roundKm(day1PortageM),
+            portageCount: day1PortageCount,
+        },
+        {
+            day: 2,
+            from: campsiteLabel,
+            to: endLabel,
+            paddleLengthKm: roundKm(day2PaddleM),
+            portageLengthKm: roundKm(day2PortageM),
+            portageCount: day2PortageCount,
+        },
+    ];
+}
+
+/**
+ * Finds every "loop" in the route network - a maximal set of non-bridge
+ * edges that all lie on cycles together - and, where possible, splits it
+ * into two arcs between its two split points. A loop only qualifies for
+ * this clean split when every one of its nodes has exactly two internal
+ * connections (i.e. it really is one simple ring, not a more tangled mesh
+ * of overlapping cycles) and it has exactly two split points; anything
+ * else (a lone loop with no spur and no campsite on it, one with three+
+ * split points, or one with a chord across it) is returned separately so
+ * the caller can fall back to a simpler treatment.
+ *
+ * A loop's split points are the points where it attaches to the rest of
+ * the network (its bridges), plus the campsite node itself if the
+ * campsite happens to sit on this particular loop - even a loop with only
+ * one real bridge attachment still splits cleanly into a day-1 arc and a
+ * day-2 arc around the campsite in that case, the same way a loop with
+ * two bridge attachments splits around them.
+ *
+ * @returns {{
+ *   cleanLoops: Array<{ arcA: number[], arcB: number[] }>,
+ *   fallbackEdgeIndices: number[],
+ * }}
+ */
+function findLoopArcs(graph, isBridge, campsiteNodeId) {
+    const nodeCount = graph.nodeCoordinates.length;
+    const parent = Array.from({ length: nodeCount }, (_, index) => index);
+    function find(id) {
+        let root = id;
+        while (parent[root] !== root) {
+            root = parent[root];
+        }
+        parent[id] = root;
+        return root;
+    }
+    function union(a, b) {
+        const rootA = find(a);
+        const rootB = find(b);
+        if (rootA !== rootB) {
+            parent[rootA] = rootB;
+        }
+    }
+    graph.edges.forEach((edge, index) => {
+        if (!isBridge[index]) {
+            union(edge.from, edge.to);
+        }
+    });
+
+    const componentNodes = new Map();
+    for (let node = 0; node < nodeCount; node++) {
+        const root = find(node);
+        if (!componentNodes.has(root)) {
+            componentNodes.set(root, []);
+        }
+        componentNodes.get(root).push(node);
+    }
+
+    const adjacency = Array.from({ length: nodeCount }, () => []);
+    graph.edges.forEach((edge, index) => {
+        adjacency[edge.from].push({ to: edge.to, edgeIndex: index });
+        adjacency[edge.to].push({ to: edge.from, edgeIndex: index });
+    });
+
+    const cleanLoops = [];
+    const fallbackEdgeIndices = [];
+
+    componentNodes.forEach((nodes) => {
+        if (nodes.length < 2) {
+            return;
+        }
+
+        const nodeSet = new Set(nodes);
+        const internalEdges = [];
+        const internalDegree = new Map();
+        const attachmentNodes = new Set();
+
+        graph.edges.forEach((edge, index) => {
+            if (isBridge[index]) {
+                if (nodeSet.has(edge.from)) attachmentNodes.add(edge.from);
+                if (nodeSet.has(edge.to)) attachmentNodes.add(edge.to);
+                return;
+            }
+            if (nodeSet.has(edge.from) && nodeSet.has(edge.to)) {
+                internalEdges.push(index);
+                internalDegree.set(edge.from, (internalDegree.get(edge.from) ?? 0) + 1);
+                internalDegree.set(edge.to, (internalDegree.get(edge.to) ?? 0) + 1);
+            }
+        });
+
+        if (nodeSet.has(campsiteNodeId)) {
+            attachmentNodes.add(campsiteNodeId);
+        }
+
+        const isSimpleCycle = nodes.every((node) => internalDegree.get(node) === 2);
+
+        if (isSimpleCycle && attachmentNodes.size === 2) {
+            const [nodeA, nodeB] = [...attachmentNodes];
+            const arcA = walkCycleArc(nodeA, nodeB, adjacency, new Set(internalEdges));
+            if (arcA && arcA.length < internalEdges.length) {
+                const arcASet = new Set(arcA);
+                const arcB = internalEdges.filter((index) => !arcASet.has(index));
+                cleanLoops.push({ arcA, arcB });
+                return;
+            }
+        }
+
+        fallbackEdgeIndices.push(...internalEdges);
+    });
+
+    return { cleanLoops, fallbackEdgeIndices };
+}
+
+/**
+ * Walks a simple cycle from startNode to endNode using only edges in
+ * edgeSet, without reusing an edge. Since every node on a simple cycle has
+ * exactly two connections within it, always stepping to whichever
+ * connection isn't the one just arrived on traces out one unambiguous arc
+ * of the cycle. Returns null if the walk runs out of edges before
+ * reaching endNode (which shouldn't happen for a genuine simple cycle).
+ */
+function walkCycleArc(startNode, endNode, adjacency, edgeSet) {
+    const path = [];
+    let current = startNode;
+    let previousEdgeIndex = -1;
+
+    while (current !== endNode) {
+        const next = adjacency[current].find(
+            ({ edgeIndex }) => edgeSet.has(edgeIndex) && edgeIndex !== previousEdgeIndex,
+        );
+        if (!next) {
+            return null;
+        }
+        path.push(next.edgeIndex);
+        previousEdgeIndex = next.edgeIndex;
+        current = next.to;
+    }
+
+    return path;
+}
+
+/**
+ * Decides, for every edge, which day it counts towards: 'both' (a spur,
+ * paddled/portaged in full on both days), 'day1'/'day2' (one specific arc
+ * of a clean loop), or 'split' (a loop that couldn't be cleanly split into
+ * one path per day, so it's shared evenly between both days instead).
+ *
+ * For every clean loop, the longer of its two arcs always goes to day 1
+ * (the outbound leg) and the shorter arc to day 2 (the return leg).
+ */
+function assignLoopArcsToDays(graph, isBridge, cleanLoops, fallbackEdgeIndices) {
+    const edgeDay = isBridge.map((bridge) => (bridge ? 'both' : 'split'));
+
+    const arcLength = (edgeIndices) =>
+        edgeIndices.reduce((sum, edgeIndex) => sum + graph.edges[edgeIndex].length, 0);
+
+    cleanLoops.forEach(({ arcA, arcB }) => {
+        const [longerArc, shorterArc] = arcLength(arcA) >= arcLength(arcB) ? [arcA, arcB] : [arcB, arcA];
+        longerArc.forEach((edgeIndex) => {
+            edgeDay[edgeIndex] = 'day1';
+        });
+        shorterArc.forEach((edgeIndex) => {
+            edgeDay[edgeIndex] = 'day2';
+        });
+    });
+
+    // Loops that couldn't be cleanly split stay 'split' (the union-find
+    // grouping above only walks bridges/loop edges it already classified
+    // as bridges, so fallback loop edges are already 'split' by default;
+    // this just documents/guards that explicitly).
+    fallbackEdgeIndices.forEach((edgeIndex) => {
+        edgeDay[edgeIndex] = 'split';
+    });
+
+    return edgeDay;
+}
+
+/**
+ * Finds bridges in the route network graph: edges that don't lie on any
+ * cycle, i.e. the only connection between the nodes on either side of them
+ * (a paddling or portage "spur"). Any edge that's part of a loop - an
+ * alternate route exists around it - is left unmarked.
+ *
+ * This is the standard low-link DFS bridge-finding algorithm, adapted for
+ * a network that can have parallel edges between the same pair of nodes
+ * (e.g. two separate portage trails between the same two lakes): it tracks
+ * the *edge* used to reach each node, rather than just its parent node, so
+ * that a second edge back to the parent is correctly recognised as an
+ * alternate route rather than mistaken for retracing the parent edge.
+ */
+function findBridgeEdges(edges, nodeCount) {
+    const adjacency = Array.from({ length: nodeCount }, () => []);
+    edges.forEach((edge, edgeIndex) => {
+        adjacency[edge.from].push({ to: edge.to, edgeIndex });
+        adjacency[edge.to].push({ to: edge.from, edgeIndex });
+    });
+
+    const isBridge = new Array(edges.length).fill(false);
+    const discovery = new Array(nodeCount).fill(-1);
+    const low = new Array(nodeCount).fill(-1);
+    let timer = 0;
+
+    function visit(nodeId, parentEdgeIndex) {
+        discovery[nodeId] = timer;
+        low[nodeId] = timer;
+        timer++;
+
+        adjacency[nodeId].forEach(({ to, edgeIndex }) => {
+            if (edgeIndex === parentEdgeIndex) {
+                return;
+            }
+            if (discovery[to] === -1) {
+                visit(to, edgeIndex);
+                low[nodeId] = Math.min(low[nodeId], low[to]);
+                if (low[to] > discovery[nodeId]) {
+                    isBridge[edgeIndex] = true;
+                }
+            } else {
+                low[nodeId] = Math.min(low[nodeId], discovery[to]);
+            }
+        });
+    }
+
+    for (let nodeId = 0; nodeId < nodeCount; nodeId++) {
+        if (discovery[nodeId] === -1) {
+            visit(nodeId, -1);
+        }
+    }
+
+    return isBridge;
+}
+
+/**
+ * Groups portage edges into physical portage crossings: chains of
+ * portage-tagged edges that connect end-to-end. A single mapped portage
+ * trail is usually a single edge, but can be split into several if a
+ * waypoint happens to land partway along it. Paddle edges are ignored when
+ * grouping, so a portage that shares a node with a paddle route doesn't
+ * get merged into it.
+ */
+function groupPortageSegments(edges) {
+    const portageEdgeIndices = [];
+    edges.forEach((edge, index) => {
+        if (edge.canoe === 'portage') {
+            portageEdgeIndices.push(index);
+        }
+    });
+
+    const parent = new Map(portageEdgeIndices.map((index) => [index, index]));
+    function find(id) {
+        let root = id;
+        while (parent.get(root) !== root) {
+            root = parent.get(root);
+        }
+        parent.set(id, root);
+        return root;
+    }
+    function union(a, b) {
+        parent.set(find(a), find(b));
+    }
+
+    const nodeToPortageEdges = new Map();
+    portageEdgeIndices.forEach((index) => {
+        const edge = edges[index];
+        [edge.from, edge.to].forEach((nodeId) => {
+            if (!nodeToPortageEdges.has(nodeId)) {
+                nodeToPortageEdges.set(nodeId, []);
+            }
+            nodeToPortageEdges.get(nodeId).push(index);
+        });
+    });
+    nodeToPortageEdges.forEach((indices) => {
+        for (let i = 1; i < indices.length; i++) {
+            union(indices[0], indices[i]);
+        }
+    });
+
+    const groups = new Map();
+    portageEdgeIndices.forEach((index) => {
+        const root = find(index);
+        if (!groups.has(root)) {
+            groups.set(root, []);
+        }
+        groups.get(root).push(index);
+    });
+
+    return [...groups.values()];
 }
 
 /**
