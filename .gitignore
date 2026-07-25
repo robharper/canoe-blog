@@ -17,6 +17,10 @@ pnpm-debug.log*
 .env
 .env.production
 
+# Google Photos import tool credentials/tokens
+util/google-photos/credentials.json
+util/google-photos/token.json
+
 # macOS-specific files
 .DS_Store
 

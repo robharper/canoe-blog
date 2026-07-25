@@ -28,6 +28,7 @@ npm run preview   # serve the production build locally
 │   ├── pages/           # Routes: /, /about, /trips/[slug]
 │   └── util/            # Geo stats and daily breakdown helpers
 ├── util/geojson/        # Route-building tools and source data (not deployed)
+├── util/google-photos/  # CLI to import trip photos from Google Photos (not deployed)
 └── astro.config.mjs
 ```
 
@@ -67,10 +68,11 @@ Set `base: '/'`, add `public/CNAME` with your domain, update DNS, and change `si
 ## Content workflow
 
 1. **Add trip markdown** — create `src/content/trips/<slug>.md` (or `.mdx`) with front matter (title, date, location, excerpt, coverImage, optional waypoint names).
-2. **Add route GeoJSON** — place `public/geo/<slug>.geo.json` (same slug as the content file).
-3. **Rebuild combined map** — from `util/geojson/`, run the combine script so `public/geo/all.geo.json` includes the new route (see `util/geojson/README.md`).
-4. **Preview** — `npm run dev` and check the trip page map and daily stats.
-5. **Deploy** — merge to `main`; GitHub Actions publishes automatically once Phases 1–4 are done.
+2. **Import photos** — run `node util/google-photos/import-photos.js <slug>` to pick photos from Google Photos (within +/- 15 days of the trip date) and download them as `.jpg` into `src/assets/images/trips/<slug>/`. See [`util/google-photos/README.md`](util/google-photos/README.md) for one-time setup.
+3. **Add route GeoJSON** — place `public/geo/<slug>.geo.json` (same slug as the content file).
+4. **Rebuild combined map** — from `util/geojson/`, run the combine script so `public/geo/all.geo.json` includes the new route (see `util/geojson/README.md`).
+5. **Preview** — `npm run dev` and check the trip page map and daily stats.
+6. **Deploy** — merge to `main`; GitHub Actions publishes automatically once Phases 1–5 are done.
 
 ## Commands
 
