@@ -31,3 +31,23 @@ nvm use
 cd source-data
 node combine.js
 ```
+
+## Portage lengths
+
+Merges connected portage segments (e.g. an OSM way split into multiple pieces)
+into single features and (re)calculates the `length` property (whole meters)
+on every portage across all files in `public/geo/`.
+
+```bash
+node util/geojson/addPortageLengths.js
+```
+
+## Removing query metadata
+
+Strips the leftover `featureGroup` property (the Overpass `query`, `name`,
+and `only` used to build the export) from every feature across all files in
+`public/geo/`.
+
+```bash
+node util/geojson/removeQueryProperties.js
+```

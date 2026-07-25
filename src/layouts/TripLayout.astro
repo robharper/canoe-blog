@@ -83,7 +83,9 @@ const { trip, stats = null, dailyStats = null } = Astro.props;
         <!-- Daily Breakdown Section (skipped when the trip's content renders
              each day's details inline instead, via inlineDailyDetails) -->
         {!trip.data.inlineDailyDetails && dailyStats && dailyStats.length > 0 && (
-            <TripDailyDetails days={dailyStats} />
+            <div class="max-w-4xl mx-auto px-4 mb-12 md:px-8">
+                <TripDailyDetails days={dailyStats} />
+            </div>
         )}
 
 

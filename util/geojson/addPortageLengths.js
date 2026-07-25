@@ -5,17 +5,16 @@
  *
  * Two portage segments are considered "connected" when the last coordinate of
  * one exactly matches the first coordinate of another (as happens when an OSM
- * way is split into multiple segments).  Connected chains are stitched into a
+ * way is split into multiple segments). Connected chains are stitched into a
  * single LineString before the length is calculated.
  *
  * Usage:
- *   node src/util/add-portage-lengths.js
+ *   node util/geojson/addPortageLengths.js
  */
 
 import { readFileSync, writeFileSync, readdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { haversineDistance } from "./geoStats.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const geoDir = resolve(__dirname, "../../public/geo");
@@ -23,6 +22,27 @@ const geoDir = resolve(__dirname, "../../public/geo");
 // ---------------------------------------------------------------------------
 // Geometry helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Calculates the Haversine distance between two points.
+ * @param {Array} p1 - [lng, lat]
+ * @param {Array} p2 - [lng, lat]
+ * @returns {number} - Distance in meters.
+ */
+function haversineDistance(p1, p2) {
+    const R = 6371e3; // Earth's radius in meters
+    const phi1 = (p1[1] * Math.PI) / 180;
+    const phi2 = (p2[1] * Math.PI) / 180;
+    const deltaPhi = ((p2[1] - p1[1]) * Math.PI) / 180;
+    const deltaLambda = ((p2[0] - p1[0]) * Math.PI) / 180;
+
+    const a =
+        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+        Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+}
 
 const coordKey = (coord) => coord.join(",");
 
