@@ -1,0 +1,13 @@
+{
+  "name": "canoe-blog-google-photos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "import-photos": "node import-photos.js"
+  },
+  "dependencies": {
+    "google-auth-library": "^10.9.1",
+    "open": "^11.0.0",
+    "sharp": "^0.35.3"
+  }
+}
