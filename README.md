@@ -29,6 +29,7 @@ npm run preview   # serve the production build locally
 │   └── util/            # Geo stats and daily breakdown helpers
 ├── util/geojson/        # Route-building tools and source data (not deployed)
 ├── util/google-photos/  # CLI to import trip photos from Google Photos (not deployed)
+├── util/addTripPhotos.js # CLI to scaffold <Photo> elements from a trip's image folder (not deployed)
 └── astro.config.mjs
 ```
 
@@ -69,10 +70,11 @@ Set `base: '/'`, add `public/CNAME` with your domain, update DNS, and change `si
 
 1. **Add trip markdown** — create `src/content/trips/<slug>.md` (or `.mdx`) with front matter (title, date, location, excerpt, coverImage, optional waypoint names).
 2. **Import photos** — run `node util/google-photos/import-photos.js <slug>` to pick photos from Google Photos (within +/- 15 days of the trip date) and download them as `.jpg` into `src/assets/images/trips/<slug>/`. See [`util/google-photos/README.md`](util/google-photos/README.md) for one-time setup.
-3. **Add route GeoJSON** — place `public/geo/<slug>.geo.json` (same slug as the content file).
-4. **Rebuild combined map** — from `util/geojson/`, run the combine script so `public/geo/all.geo.json` includes the new route (see `util/geojson/README.md`).
-5. **Preview** — `npm run dev` and check the trip page map and daily stats.
-6. **Deploy** — merge to `main`; GitHub Actions publishes automatically once Phases 1–5 are done.
+3. **Scaffold photo elements** — run `node util/addTripPhotos.js <slug>` to add a `<Photo>` element (with a `TODO` caption) for every image in that folder that doesn't have one yet, reusing unused imports where present. Converts the content file to `.mdx` if needed, since `<Photo>` is a component. Then edit the captions and move each `<Photo>` block to the right place in the narrative.
+4. **Add route GeoJSON** — place `public/geo/<slug>.geo.json` (same slug as the content file).
+5. **Rebuild combined map** — from `util/geojson/`, run the combine script so `public/geo/all.geo.json` includes the new route (see `util/geojson/README.md`).
+6. **Preview** — `npm run dev` and check the trip page map and daily stats.
+7. **Deploy** — merge to `main`; GitHub Actions publishes automatically once Phases 1–6 are done.
 
 ## Commands
 
