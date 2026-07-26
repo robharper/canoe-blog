@@ -98,19 +98,21 @@ async function main() {
 		console.log(`\nDownloading ${photos.length} photo(s) into ${path.relative(process.cwd(), destDir)}...\n`);
 
 		let saved = 0;
+		let replaced = 0;
 		for (const item of photos) {
 			const { mediaFile } = item;
 			try {
 				const buffer = await downloadMediaFile(client, mediaFile);
-				const destPath = await saveAsJpeg(buffer, destDir, mediaFile.filename ?? `${item.id}.jpg`);
-				console.log(`  \u2713 ${path.basename(destPath)}`);
+				const result = await saveAsJpeg(buffer, destDir, mediaFile.filename ?? `${item.id}.jpg`);
+				console.log(`  ${result.replaced ? '\u21bb replaced' : '\u2713 added'} ${path.basename(result.destPath)}`);
 				saved += 1;
+				if (result.replaced) replaced += 1;
 			} catch (err) {
 				console.error(`  \u2717 ${mediaFile.filename}: ${err.message}`);
 			}
 		}
 
-		console.log(`\nSaved ${saved}/${photos.length} photo(s) to ${destDir}`);
+		console.log(`\nSaved ${saved}/${photos.length} photo(s) to ${destDir}${replaced > 0 ? ` (${replaced} replaced)` : ''}`);
 		console.log(`Reference them from src/content/trips/${trip.slug}.md(x), e.g.:`);
 		console.log(`  ../../assets/images/trips/${trip.slug}/<filename>.jpg\n`);
 	} finally {

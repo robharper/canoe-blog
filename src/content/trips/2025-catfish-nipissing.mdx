@@ -11,6 +11,7 @@ waypointNames:
     1: "Catfish Lake"
     2: "Whiskeyjack Lake"
     3: "Nipissing River"
+inlineDailyDetails: true
 ---
 import Photo from '../../components/Photo.astro';
 
@@ -27,6 +28,7 @@ import river from '/src/assets/images/trips/2025-catfish-nipissing/IMG_7625.jpeg
 import morningRiver from '/src/assets/images/trips/2025-catfish-nipissing/IMG_7629.jpeg';
 import morningPaddle from '/src/assets/images/trips/2025-catfish-nipissing/IMG_7635.jpeg';
 import lastPortage from '/src/assets/images/trips/2025-catfish-nipissing/IMG_7637.jpeg';
+import TripDailyDetails from '../../components/TripDailyDetails.astro';
 
 
 ## Day 1: Cedar to Catfish
@@ -46,4 +48,44 @@ import lastPortage from '/src/assets/images/trips/2025-catfish-nipissing/IMG_763
 
 <Photo src={sunset} alt="A beautiful sunset over the lake">
   Great view to end the day
+</Photo>
+
+## Day 2: July 13, 2025
+
+<TripDailyDetails day={2} days={props.dailyStats} showHeader={false} />
+
+<Photo src={oldBottle} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
+</Photo>
+
+<Photo src={longPortage} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
+</Photo>
+
+<Photo src={ruins} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
+</Photo>
+
+## Day 3: July 14, 2025
+
+<TripDailyDetails day={3} days={props.dailyStats} showHeader={false} />
+
+<Photo src={foam} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
+</Photo>
+
+<Photo src={river} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
+</Photo>
+
+## Day 4: July 15, 2025
+
+<TripDailyDetails day={4} days={props.dailyStats} showHeader={false} />
+
+<Photo src={morningPaddle} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
+</Photo>
+
+<Photo src={lastPortage} alt="A photo from the Catfish - Whiskeyjack - Nipissing trip">
+  TODO: Add a caption for this photo.
 </Photo>

@@ -1,0 +1,11 @@
+{
+  "name": "canoe-blog-resize-images",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "resize-images": "node resizeImages.js"
+  },
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
+}

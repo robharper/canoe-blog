@@ -1,0 +1,8 @@
+{
+  "name": "canoe-blog-add-trip-photos",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "exifr": "^7.1.3"
+  }
+}
